@@ -25,220 +25,188 @@ def generar_id(file_path):
         return 1
 
 
-# -----------------------------
+# =============================
 # USUARIOS
-# -----------------------------
+# =============================
+
+def read_usuarios():
+    try:
+        with open(USUARIOS_FILE, "r", encoding="utf-8") as file:
+            return list(csv.DictReader(file))
+    except FileNotFoundError:
+        return []
+
+
+def save_usuarios(data):
+    with open(USUARIOS_FILE, "w", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(file, fieldnames=["id", "nombre", "edad", "estado"])
+        writer.writeheader()
+        writer.writerows(data)
+
 
 def create_usuario(usuario):
     usuario["id"] = generar_id(USUARIOS_FILE)
     usuario["estado"] = "activo"
 
-    file_exists = os.path.isfile(USUARIOS_FILE)
-
-    with open(USUARIOS_FILE, mode="a", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=usuario.keys())
-
-        if not file_exists:
-            writer.writeheader()
-
-        writer.writerow(usuario)
+    data = read_usuarios()
+    data.append(usuario)
+    save_usuarios(data)
 
     return usuario
 
 
 def get_usuarios():
-    try:
-        with open(USUARIOS_FILE, mode="r", encoding="utf-8") as file:
-            data = list(csv.DictReader(file))
-            return [u for u in data if u.get("estado", "activo") == "activo"]
-    except FileNotFoundError:
-        return []
+    data = read_usuarios()
+    return [u for u in data if u.get("estado") == "activo"]
 
 
-def get_usuarios_all():
+def update_usuario(id, nuevo):
+    data = read_usuarios()
+    encontrado = False
+
+    for u in data:
+        if int(u["id"]) == id and u["estado"] == "activo":
+            u["nombre"] = nuevo["nombre"]
+            u["edad"] = nuevo["edad"]
+            encontrado = True
+            break
+
+    if not encontrado:
+        return None
+
+    save_usuarios(data)
+    return nuevo
+
+
+def delete_usuario(id):
+    data = read_usuarios()
+    encontrado = False
+
+    for u in data:
+        if int(u["id"]) == id:
+            u["estado"] = "inactivo"
+            encontrado = True
+            break
+
+    if not encontrado:
+        return False
+
+    save_usuarios(data)
+    return True
+
+
+# =============================
+# KDRAMAS
+# =============================
+
+def read_kdramas():
     try:
-        with open(USUARIOS_FILE, mode="r", encoding="utf-8") as file:
+        with open(KDRAMAS_FILE, "r", encoding="utf-8") as file:
             return list(csv.DictReader(file))
     except FileNotFoundError:
         return []
 
 
-def update_usuario(id, nuevo_usuario):
-    usuarios = get_usuarios_all()
-    actualizado = False
-
-    for u in usuarios:
-        if int(u["id"]) == id and u["estado"] == "activo":
-            u["nombre"] = nuevo_usuario["nombre"]
-            u["edad"] = nuevo_usuario["edad"]
-            actualizado = True
-            break
-
-    if not actualizado:
-        return None
-
-    with open(USUARIOS_FILE, mode="w", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=usuarios[0].keys())
+def save_kdramas(data):
+    with open(KDRAMAS_FILE, "w", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(file, fieldnames=["id", "nombre", "genero", "nivel_emocional", "estado"])
         writer.writeheader()
-        writer.writerows(usuarios)
+        writer.writerows(data)
 
-    return nuevo_usuario
-
-
-def delete_usuario(id):
-    usuarios = get_usuarios_all()
-    eliminado = False
-
-    for u in usuarios:
-        if int(u["id"]) == id:
-            u["estado"] = "inactivo"
-            eliminado = True
-            break
-
-    if not eliminado:
-        return False
-
-    with open(USUARIOS_FILE, mode="w", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=usuarios[0].keys())
-        writer.writeheader()
-        writer.writerows(usuarios)
-
-    return True
-
-
-# -----------------------------
-# K-DRAMAS
-# -----------------------------
 
 def create_kdrama(drama):
     drama["id"] = generar_id(KDRAMAS_FILE)
     drama["estado"] = "activo"
 
-    file_exists = os.path.isfile(KDRAMAS_FILE)
-
-    with open(KDRAMAS_FILE, mode="a", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=drama.keys())
-
-        if not file_exists:
-            writer.writeheader()
-
-        writer.writerow(drama)
+    data = read_kdramas()
+    data.append(drama)
+    save_kdramas(data)
 
     return drama
 
 
 def get_kdramas():
-    try:
-        with open(KDRAMAS_FILE, mode="r", encoding="utf-8") as file:
-            data = list(csv.DictReader(file))
-            return [d for d in data if d.get("estado", "activo") == "activo"]
-    except FileNotFoundError:
-        return []
+    data = read_kdramas()
+    return [d for d in data if d.get("estado") == "activo"]
 
 
-def get_kdramas_all():
+def update_kdrama(id, nuevo):
+    data = read_kdramas()
+    encontrado = False
+
+    for d in data:
+        if int(d["id"]) == id and d["estado"] == "activo":
+            d["nombre"] = nuevo["nombre"]
+            d["genero"] = nuevo["genero"]
+            d["nivel_emocional"] = nuevo["nivel_emocional"]
+            encontrado = True
+            break
+
+    if not encontrado:
+        return None
+
+    save_kdramas(data)
+    return nuevo
+
+
+def delete_kdrama(id):
+    data = read_kdramas()
+    encontrado = False
+
+    for d in data:
+        if int(d["id"]) == id:
+            d["estado"] = "inactivo"
+            encontrado = True
+            break
+
+    if not encontrado:
+        return False
+
+    save_kdramas(data)
+    return True
+
+
+# =============================
+# PERSONALIDAD
+# =============================
+
+def read_personalidad():
     try:
-        with open(KDRAMAS_FILE, mode="r", encoding="utf-8") as file:
+        with open(PERSONALIDAD_FILE, "r", encoding="utf-8") as file:
             return list(csv.DictReader(file))
     except FileNotFoundError:
         return []
 
 
-def update_kdrama(id, nuevo):
-    dramas = get_kdramas_all()
-    actualizado = False
-
-    for d in dramas:
-        if int(d["id"]) == id and d["estado"] == "activo":
-            d["nombre"] = nuevo["nombre"]
-            d["genero"] = nuevo["genero"]
-            d["nivel_emocional"] = nuevo["nivel_emocional"]
-            actualizado = True
-            break
-
-    if not actualizado:
-        return None
-
-    with open(KDRAMAS_FILE, mode="w", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=dramas[0].keys())
+def save_personalidad(data):
+    with open(PERSONALIDAD_FILE, "w", newline="", encoding="utf-8") as file:
+        writer = csv.DictWriter(
+            file,
+            fieldnames=["id", "id_usuario", "romantico", "aventurero", "oscuro", "intenso", "estado"]
+        )
         writer.writeheader()
-        writer.writerows(dramas)
+        writer.writerows(data)
 
-    return nuevo
-
-
-def delete_kdrama(id):
-    dramas = get_kdramas_all()
-    eliminado = False
-
-    for d in dramas:
-        if int(d["id"]) == id:
-            d["estado"] = "inactivo"
-            eliminado = True
-            break
-
-    if not eliminado:
-        return False
-
-    with open(KDRAMAS_FILE, mode="w", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=dramas[0].keys())
-        writer.writeheader()
-        writer.writerows(dramas)
-
-    return True
-
-
-# -----------------------------
-# PERSONALIDAD
-# -----------------------------
 
 def create_personalidad(p):
     p["id"] = generar_id(PERSONALIDAD_FILE)
     p["estado"] = "activo"
 
-    file_exists = os.path.isfile(PERSONALIDAD_FILE)
-
-    with open(PERSONALIDAD_FILE, mode="a", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=p.keys())
-
-        if not file_exists:
-            writer.writeheader()
-
-        writer.writerow(p)
+    data = read_personalidad()
+    data.append(p)
+    save_personalidad(data)
 
     return p
 
 
 def get_personalidades():
-    try:
-        with open(PERSONALIDAD_FILE, mode="r", encoding="utf-8") as file:
-            data = list(csv.DictReader(file))
-            return [p for p in data if p.get("estado", "activo") == "activo"]
-    except FileNotFoundError:
-        return []
-
-
-def get_personalidades_all():
-    try:
-        with open(PERSONALIDAD_FILE, mode="r", encoding="utf-8") as file:
-            return list(csv.DictReader(file))
-    except FileNotFoundError:
-        return []
-
-
-def get_personalidad_by_id(id):
-    data = get_personalidades_all()
-
-    for p in data:
-        if int(p["id"]) == id:
-            return p
-
-    return None
+    data = read_personalidad()
+    return [p for p in data if p.get("estado") == "activo"]
 
 
 def update_personalidad(id, nuevo):
-    data = get_personalidades_all()
-    actualizado = False
+    data = read_personalidad()
+    encontrado = False
 
     for p in data:
         if int(p["id"]) == id and p["estado"] == "activo":
@@ -247,36 +215,28 @@ def update_personalidad(id, nuevo):
             p["aventurero"] = nuevo["aventurero"]
             p["oscuro"] = nuevo["oscuro"]
             p["intenso"] = nuevo["intenso"]
-            actualizado = True
+            encontrado = True
             break
 
-    if not actualizado:
+    if not encontrado:
         return None
 
-    with open(PERSONALIDAD_FILE, mode="w", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=data[0].keys())
-        writer.writeheader()
-        writer.writerows(data)
-
+    save_personalidad(data)
     return nuevo
 
 
 def delete_personalidad(id):
-    data = get_personalidades_all()
-    eliminado = False
+    data = read_personalidad()
+    encontrado = False
 
     for p in data:
         if int(p["id"]) == id:
             p["estado"] = "inactivo"
-            eliminado = True
+            encontrado = True
             break
 
-    if not eliminado:
+    if not encontrado:
         return False
 
-    with open(PERSONALIDAD_FILE, mode="w", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=data[0].keys())
-        writer.writeheader()
-        writer.writerows(data)
-
+    save_personalidad(data)
     return True

@@ -1,3 +1,9 @@
-nombre,genero,nivel_emocional,id
-La gloria,drama,9,1
-All of Us Are Dead,terror,8,2
+id,nombre,genero,nivel_emocional,estado
+1,La gloria,drama,9,
+2,All of Us Are Dead,terror,8,
+3,Encuentro,romance,7,activo
+4,Goblin,romance,9,activo
+5,Vincenzo,accion,6,activo
+6,My mister,drama,10,activo
+7,All of Us Are Dead,terror,8,activo
+8,La gloria,drama,9,activo

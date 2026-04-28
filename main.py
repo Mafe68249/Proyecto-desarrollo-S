@@ -3,25 +3,15 @@ from fastapi import FastAPI
 from models import Usuario, Usuarioid, Personalidad, KDrama, KDramaid
 
 from operations_csv import (
-
-    get_usuarios, create_usuario, update_usuario, delete_usuario,
-
-
-    get_kdramas, create_kdrama, update_kdrama, delete_kdrama,
-
-
-    create_personalidad, get_personalidades, get_personalidad_by_id,
+    create_usuario, get_usuarios, update_usuario, delete_usuario,
+    create_kdrama, get_kdramas, update_kdrama, delete_kdrama,
+    create_personalidad, get_personalidades,
     update_personalidad, delete_personalidad
 )
-
 app = FastAPI()
 
-
-personalidades = []
-
-
 # -----------------------------
-#  USUARIOS
+# USUARIOS
 # -----------------------------
 
 @app.post("/usuarios", response_model=Usuarioid)
@@ -44,7 +34,7 @@ def obtener_usuario(id: int):
 
 
 @app.put("/usuarios/{id}")
-def actualizar_usuario_endpoint(id: int, usuario: Usuario):
+def actualizar_usuario(id: int, usuario: Usuario):
     actualizado = update_usuario(id, usuario.model_dump())
     if not actualizado:
         return {"error": "Usuario no encontrado"}
@@ -52,14 +42,13 @@ def actualizar_usuario_endpoint(id: int, usuario: Usuario):
 
 
 @app.delete("/usuarios/{id}")
-def eliminar_usuario_endpoint(id: int):
+def eliminar_usuario(id: int):
     eliminado = delete_usuario(id)
     if not eliminado:
         return {"error": "Usuario no encontrado"}
     return {"mensaje": "Usuario eliminado"}
 
 
-# búsqueda por nombre
 @app.get("/usuarios/buscar/{nombre}")
 def buscar_usuario(nombre: str):
     usuarios = get_usuarios()
@@ -67,7 +56,7 @@ def buscar_usuario(nombre: str):
 
 
 # -----------------------------
-#  K-DRAMAS
+# KDRAMAS
 # -----------------------------
 
 @app.post("/kdramas", response_model=KDramaid)
@@ -90,7 +79,7 @@ def obtener_kdrama(id: int):
 
 
 @app.put("/kdramas/{id}")
-def actualizar_kdrama_endpoint(id: int, drama: KDrama):
+def actualizar_kdrama(id: int, drama: KDrama):
     actualizado = update_kdrama(id, drama.model_dump())
     if not actualizado:
         return {"error": "K-drama no encontrado"}
@@ -98,72 +87,24 @@ def actualizar_kdrama_endpoint(id: int, drama: KDrama):
 
 
 @app.delete("/kdramas/{id}")
-def eliminar_kdrama_endpoint(id: int):
+def eliminar_kdrama(id: int):
     eliminado = delete_kdrama(id)
     if not eliminado:
         return {"error": "K-drama no encontrado"}
     return {"mensaje": "K-drama eliminado"}
 
 
-# búsqueda por nombre
 @app.get("/kdramas/buscar/{nombre}")
 def buscar_kdrama(nombre: str):
     dramas = get_kdramas()
     return [d for d in dramas if nombre.lower() in d["nombre"].lower()]
 
 
-# búsqueda por género
 @app.get("/kdramas/genero/{genero}")
 def buscar_genero(genero: str):
     dramas = get_kdramas()
     return [d for d in dramas if genero in d["genero"]]
 
-
-# -----------------------------
-# PERSONALIDAD
-# -----------------------------
-
-@app.post("/personalidad")
-def guardar_personalidad(p: Personalidad):
-    personalidades.append(p.model_dump())
-    return {"mensaje": "Personalidad guardada"}
-
-
-# -----------------------------
-# RECOMENDADOR
-# -----------------------------
-
-@app.get("/recomendar/{id_usuario}")
-def recomendar(id_usuario: int):
-
-    dramas = get_kdramas()
-
-    personalidad = next(
-        (p for p in personalidades if p["id_usuario"] == id_usuario),
-        None
-    )
-
-    if not personalidad:
-        return {"error": "No hay personalidad registrada"}
-
-    resultado = []
-
-    for d in dramas:
-        genero = d["genero"]
-
-        if personalidad["romantico"] and genero == "romance":
-            resultado.append(d)
-
-        elif personalidad["aventurero"] and genero == "accion":
-            resultado.append(d)
-
-        elif personalidad["oscuro"] and genero in ["terror", "suspenso"]:
-            resultado.append(d)
-
-        elif personalidad["intenso"] and int(d["nivel_emocional"]) >= 8:
-            resultado.append(d)
-
-    return resultado
 
 # -----------------------------
 # PERSONALIDAD
@@ -181,23 +122,67 @@ def obtener_personalidades():
 
 @app.get("/personalidad/{id}")
 def obtener_personalidad(id: int):
-    p = get_personalidad_by_id(id)
-    if not p:
-        return {"error": "No encontrada"}
-    return p
+    data = get_personalidades()
+
+    for p in data:
+        if int(p["id"]) == id:
+            return p
+
+    return {"error": "No encontrada"}
 
 
 @app.put("/personalidad/{id}")
 def actualizar_personalidad(id: int, p: Personalidad):
     actualizado = update_personalidad(id, p.model_dump())
+
     if not actualizado:
         return {"error": "No encontrada"}
+
     return actualizado
 
 
 @app.delete("/personalidad/{id}")
 def eliminar_personalidad(id: int):
     eliminado = delete_personalidad(id)
+
     if not eliminado:
         return {"error": "No encontrada"}
+
     return {"mensaje": "Personalidad desactivada"}
+
+# -----------------------------
+# RECOMENDADOR
+# -----------------------------
+
+@app.get("/recomendar/{id_usuario}")
+def recomendar(id_usuario: int):
+
+    dramas = get_kdramas()
+    personas = get_personalidades()
+
+    personalidad = next(
+        (p for p in personas if int(p["id_usuario"]) == id_usuario),
+        None
+    )
+
+    if not personalidad:
+        return {"error": "No hay personalidad registrada"}
+
+    resultado = []
+
+    for d in dramas:
+        genero = d["genero"]
+
+        if personalidad["romantico"] == "True" and genero == "romance":
+            resultado.append(d)
+
+        elif personalidad["aventurero"] == "True" and genero == "accion":
+            resultado.append(d)
+
+        elif personalidad["oscuro"] == "True" and genero in ["terror", "suspenso"]:
+            resultado.append(d)
+
+        elif personalidad["intenso"] == "True" and int(d["nivel_emocional"]) >= 8:
+            resultado.append(d)
+
+    return resultado
