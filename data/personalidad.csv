@@ -1,1 +1,3 @@
-id,id_usuario,romantico,aventurero,oscuro,intenso,estado
+id,id_usuario,romantico,aventurero,sensible,extrovertido,oscuro,intenso,estado
+1,4,True,True,True,False,True,False,inactivo
+2,6,True,False,True,True,True,True,activo

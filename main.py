@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 from models import Usuario, Usuarioid, Personalidad, KDrama, KDramaid
 
@@ -8,6 +8,7 @@ from operations_csv import (
     create_personalidad, get_personalidades,
     update_personalidad, delete_personalidad
 )
+
 app = FastAPI()
 
 # -----------------------------
@@ -30,14 +31,14 @@ def obtener_usuario(id: int):
     for u in usuarios:
         if int(u["id"]) == id:
             return u
-    return {"error": "Usuario no encontrado"}
+    raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
 
 @app.put("/usuarios/{id}")
 def actualizar_usuario(id: int, usuario: Usuario):
     actualizado = update_usuario(id, usuario.model_dump())
     if not actualizado:
-        return {"error": "Usuario no encontrado"}
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
     return actualizado
 
 
@@ -45,7 +46,7 @@ def actualizar_usuario(id: int, usuario: Usuario):
 def eliminar_usuario(id: int):
     eliminado = delete_usuario(id)
     if not eliminado:
-        return {"error": "Usuario no encontrado"}
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
     return {"mensaje": "Usuario eliminado"}
 
 
@@ -75,14 +76,14 @@ def obtener_kdrama(id: int):
     for d in dramas:
         if int(d["id"]) == id:
             return d
-    return {"error": "K-drama no encontrado"}
+    raise HTTPException(status_code=404, detail="K-drama no encontrado")
 
 
 @app.put("/kdramas/{id}")
 def actualizar_kdrama(id: int, drama: KDrama):
     actualizado = update_kdrama(id, drama.model_dump())
     if not actualizado:
-        return {"error": "K-drama no encontrado"}
+        raise HTTPException(status_code=404, detail="K-drama no encontrado")
     return actualizado
 
 
@@ -90,7 +91,7 @@ def actualizar_kdrama(id: int, drama: KDrama):
 def eliminar_kdrama(id: int):
     eliminado = delete_kdrama(id)
     if not eliminado:
-        return {"error": "K-drama no encontrado"}
+        raise HTTPException(status_code=404, detail="K-drama no encontrado")
     return {"mensaje": "K-drama eliminado"}
 
 
@@ -103,7 +104,7 @@ def buscar_kdrama(nombre: str):
 @app.get("/kdramas/genero/{genero}")
 def buscar_genero(genero: str):
     dramas = get_kdramas()
-    return [d for d in dramas if genero in d["genero"]]
+    return [d for d in dramas if genero.lower() in d["genero"].lower()]
 
 
 # -----------------------------
@@ -112,6 +113,14 @@ def buscar_genero(genero: str):
 
 @app.post("/personalidad")
 def crear_personalidad(p: Personalidad):
+
+    # 🔥 VALIDAR QUE EL USUARIO EXISTE (evita errores 500)
+    usuarios = get_usuarios()
+    existe = any(int(u["id"]) == p.id_usuario for u in usuarios)
+
+    if not existe:
+        raise HTTPException(status_code=404, detail="Usuario no existe")
+
     return create_personalidad(p.model_dump())
 
 
@@ -128,7 +137,7 @@ def obtener_personalidad(id: int):
         if int(p["id"]) == id:
             return p
 
-    return {"error": "No encontrada"}
+    raise HTTPException(status_code=404, detail="Personalidad no encontrada")
 
 
 @app.put("/personalidad/{id}")
@@ -136,7 +145,7 @@ def actualizar_personalidad(id: int, p: Personalidad):
     actualizado = update_personalidad(id, p.model_dump())
 
     if not actualizado:
-        return {"error": "No encontrada"}
+        raise HTTPException(status_code=404, detail="Personalidad no encontrada")
 
     return actualizado
 
@@ -146,9 +155,10 @@ def eliminar_personalidad(id: int):
     eliminado = delete_personalidad(id)
 
     if not eliminado:
-        return {"error": "No encontrada"}
+        raise HTTPException(status_code=404, detail="Personalidad no encontrada")
 
     return {"mensaje": "Personalidad desactivada"}
+
 
 # -----------------------------
 # RECOMENDADOR
@@ -166,23 +176,29 @@ def recomendar(id_usuario: int):
     )
 
     if not personalidad:
-        return {"error": "No hay personalidad registrada"}
+        raise HTTPException(status_code=404, detail="No hay personalidad registrada")
 
     resultado = []
 
     for d in dramas:
-        genero = d["genero"]
+        genero = d["genero"].lower()
 
-        if personalidad["romantico"] == "True" and genero == "romance":
+        # 🔥 normalizamos booleanos (evita errores raros)
+        romantico = str(personalidad["romantico"]) == "True"
+        aventurero = str(personalidad["aventurero"]) == "True"
+        oscuro = str(personalidad["oscuro"]) == "True"
+        intenso = str(personalidad["intenso"]) == "True"
+
+        if romantico and genero == "romance":
             resultado.append(d)
 
-        elif personalidad["aventurero"] == "True" and genero == "accion":
+        elif aventurero and genero == "accion":
             resultado.append(d)
 
-        elif personalidad["oscuro"] == "True" and genero in ["terror", "suspenso"]:
+        elif oscuro and genero in ["terror", "suspenso"]:
             resultado.append(d)
 
-        elif personalidad["intenso"] == "True" and int(d["nivel_emocional"]) >= 8:
+        elif intenso and int(d["nivel_emocional"]) >= 8:
             resultado.append(d)
 
     return resultado

@@ -8,8 +8,9 @@ BASE_PATH = "data"
 
 USUARIOS_FILE = os.path.join(BASE_PATH, "usuarios.csv")
 KDRAMAS_FILE = os.path.join(BASE_PATH, "kdramas.csv")
-PERSONALIDAD_FILE = os.path.join(BASE_PATH, "personalidad.csv")
+BASE_PATH = os.path.join(os.path.dirname(__file__), "data")
 
+PERSONALIDAD_FILE = os.path.join(BASE_PATH, "personalidad.csv")
 
 # -----------------------------
 # GENERADOR DE ID
