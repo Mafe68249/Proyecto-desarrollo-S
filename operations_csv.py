@@ -182,7 +182,17 @@ def save_personalidad(data):
     with open(PERSONALIDAD_FILE, "w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(
             file,
-            fieldnames=["id", "id_usuario", "romantico", "aventurero", "oscuro", "intenso", "estado"]
+            fieldnames=[
+                "id",
+                "id_usuario",
+                "romantico",
+                "aventurero",
+                "sensible",
+                "extrovertido",
+                "oscuro",
+                "intenso",
+                "estado"
+            ]
         )
         writer.writeheader()
         writer.writerows(data)
@@ -213,6 +223,8 @@ def update_personalidad(id, nuevo):
             p["id_usuario"] = nuevo["id_usuario"]
             p["romantico"] = nuevo["romantico"]
             p["aventurero"] = nuevo["aventurero"]
+            p["sensible"] = nuevo["sensible"]
+            p["extrovertido"] = nuevo["extrovertido"]
             p["oscuro"] = nuevo["oscuro"]
             p["intenso"] = nuevo["intenso"]
             encontrado = True
