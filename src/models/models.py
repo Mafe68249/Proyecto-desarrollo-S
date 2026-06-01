@@ -1,4 +1,4 @@
-from pydantic import SQLModel, Field
+from sqlmodel import SQLModel, Field
 from src.models.genero import Genero
 from typing import Optional
 
