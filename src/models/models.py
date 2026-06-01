@@ -13,7 +13,6 @@ class Usuario(SQLModel, table=True):
 
 
 
-
 class Personalidad(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
