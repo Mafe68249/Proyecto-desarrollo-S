@@ -31,11 +31,8 @@ SQLModel.metadata.create_all(engine)
 # -----------------------------
 
 @app.post("/usuarios", response_model=Usuario)
-def crear_usuario(usuario: UsuarioCreate):
-
-    nuevo_usuario = Usuario(**usuario.model_dump())
-
-    return create_usuario(nuevo_usuario)
+def crear_usuario(usuario: Usuario):
+    return create_usuario(usuario)
 
 @app.get("/usuarios")
 def obtener_usuarios():

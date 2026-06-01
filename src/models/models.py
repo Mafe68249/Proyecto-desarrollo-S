@@ -3,9 +3,6 @@ from src.models.genero import Genero
 from typing import Optional
 
 
-class UsuarioCreate(SQLModel):
-    nombre: str = Field(min_length=2)
-    edad: int = Field(gt=0)
 
 
 class Usuario(SQLModel, table=True):
