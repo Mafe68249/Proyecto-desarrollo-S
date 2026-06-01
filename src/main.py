@@ -1,7 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from sqlmodel import SQLModel
 from src.database import engine
-from src.models.models import Usuario,UsuarioCreate, Personalidad, KDrama
+from fastapi.responses import FileResponse
+from src.models.models import Usuario,Personalidad, KDrama
 
 from src.operations.usuario_operations import (
     create_usuario,
@@ -216,3 +217,5 @@ def recomendar(id_usuario: int):
             resultado.append(d)
 
     return resultado
+
+from fastapi.responses import FileResponse
