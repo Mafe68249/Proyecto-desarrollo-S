@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from sqlmodel import SQLModel
 from src.database import engine
-from src.models.models import Usuario, Personalidad, KDrama
+from src.models.models import Usuario,UsuarioCreate, Personalidad, KDrama
 
 from src.operations.usuario_operations import (
     create_usuario,
@@ -31,9 +31,11 @@ SQLModel.metadata.create_all(engine)
 # -----------------------------
 
 @app.post("/usuarios", response_model=Usuario)
-def crear_usuario(usuario: Usuario):
-    return create_usuario(usuario.model_dump())
+def crear_usuario(usuario: UsuarioCreate):
 
+    nuevo_usuario = Usuario(**usuario.model_dump())
+
+    return create_usuario(nuevo_usuario)
 
 @app.get("/usuarios")
 def obtener_usuarios():
