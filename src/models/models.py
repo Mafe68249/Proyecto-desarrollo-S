@@ -6,6 +6,7 @@ from pydantic import EmailStr
 class UsuarioCreate(SQLModel):
     nombre: str = Field(min_length=2)
     edad: int = Field(gt=0)
+    correo: EmailStr
 
 class Usuario(SQLModel, table=True):
 
