@@ -31,6 +31,10 @@ SQLModel.metadata.create_all(engine)
 # USUARIOS
 # -----------------------------
 
+@app.get("/")
+def inicio():
+    return FileResponse("frontend/usuarios.html")
+
 @app.post("/usuarios", response_model=Usuario)
 def crear_usuario(usuario: Usuario):
     return create_usuario(usuario)
@@ -218,4 +222,3 @@ def recomendar(id_usuario: int):
 
     return resultado
 
-from fastapi.responses import FileResponse
