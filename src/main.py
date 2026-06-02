@@ -1,11 +1,11 @@
-from fastapi import FastAPI, HTTPException, Depends, UploadFile, File
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from sqlmodel import SQLModel
 from src.database import engine, create_tables
 from src.models.models import Usuario, Personalidad, KDrama
+from pydantic import BaseModel
 import os
-
 
 from src.operations.usuario_operations import (
     create_usuario,
@@ -38,11 +38,10 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 app = FastAPI()
 
 # ========== CREAR TABLAS ==========
-create_tables()  # ✅ CORREGIDO: ahora usa la función
+create_tables()
 
 # ========== SERVIR ARCHIVOS ESTÁTICOS ==========
 app.mount("/css", StaticFiles(directory="frontend/css"), name="css")
-
 
 # ========== CONFIGURACIÓN JWT ==========
 SECRET_KEY = "tu-clave-secreta-cambiala-en-produccion-123456"
@@ -82,8 +81,6 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     user_id = payload.get("sub")
     if user_id is None:
         raise HTTPException(status_code=401, detail="Token inválido")
-
-    from src.operations.usuario_operations import get_usuarios
     usuarios = get_usuarios()
     user = next((u for u in usuarios if int(u["id"]) == int(user_id)), None)
     if user is None:
@@ -103,36 +100,16 @@ async def index():
     return FileResponse("frontend/index.html")
 
 
-@app.get("/{html_file}")
-async def serve_html(html_file: str):
-    if html_file.endswith('.html'):
-        file_path = f"frontend/{html_file}"
-        if os.path.exists(file_path):
-            return FileResponse(file_path)
-    raise HTTPException(status_code=404, detail="Página no encontrada")
-
-
 # ========== AUTENTICACIÓN ==========
 
 @app.post("/login")
 def login(email: str, password: str):
-    from src.operations.usuario_operations import get_usuario_by_email
-
-    print(f"Intentando login con email: {email}")
-
     usuario = get_usuario_by_email(email)
     if not usuario:
-        print("Usuario no encontrado")
         raise HTTPException(status_code=401, detail="Email incorrecto")
-
-    print(f"Usuario encontrado: {usuario.nombre}")
-
     if not verify_password(password, usuario.password):
-        print("Contraseña incorrecta")
         raise HTTPException(status_code=401, detail="Contraseña incorrecta")
-
     token = create_access_token({"sub": str(usuario.id), "rol": usuario.rol})
-
     return {
         "access_token": token,
         "token_type": "bearer",
@@ -140,6 +117,7 @@ def login(email: str, password: str):
         "nombre": usuario.nombre,
         "rol": usuario.rol
     }
+
 
 @app.get("/usuarios/me")
 def get_me(current_user=Depends(get_current_user)):
@@ -149,34 +127,30 @@ def get_me(current_user=Depends(get_current_user)):
 # ========== REGISTRO DE USUARIOS ==========
 @app.post("/registro")
 def registro(nombre: str, edad: int, email: str, password: str):
-    from src.operations.usuario_operations import get_usuario_by_email, create_usuario
-    from passlib.context import CryptContext
-
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-    # Verificar si ya existe
     existe = get_usuario_by_email(email)
     if existe:
         raise HTTPException(status_code=400, detail="El email ya está registrado")
-
-    # Encriptar contraseña
-    hashed_password = pwd_context.hash(password)
-
-    # Crear usuario (rol por defecto "usuario")
+    # CORRECCIÓN: no hashear aquí; create_usuario ya lo hace internamente
     nuevo_usuario = create_usuario({
         "nombre": nombre,
         "edad": edad,
         "email": email,
-        "password": hashed_password,
+        "password": password,
         "rol": "usuario"
     })
-
     return {"mensaje": "Usuario creado exitosamente", "usuario": nuevo_usuario}
+
 
 # ========== USUARIOS (PÚBLICOS) ==========
 @app.get("/usuarios")
 def obtener_usuarios():
     return get_usuarios()
+
+
+@app.get("/usuarios/buscar/{nombre}")
+def buscar_usuario(nombre: str):
+    usuarios = get_usuarios()
+    return [u for u in usuarios if nombre.lower() in u["nombre"].lower()]
 
 
 @app.get("/usuarios/{id}")
@@ -188,16 +162,10 @@ def obtener_usuario(id: int):
     raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
 
-@app.get("/usuarios/buscar/{nombre}")
-def buscar_usuario(nombre: str):
-    usuarios = get_usuarios()
-    return [u for u in usuarios if nombre.lower() in u["nombre"].lower()]
-
-
 # ========== USUARIOS (SOLO ADMIN) ==========
 @app.post("/usuarios", response_model=Usuario)
 def crear_usuario(usuario: Usuario, admin=Depends(get_current_admin)):
-    return create_usuario(usuario)
+    return create_usuario(usuario.model_dump())
 
 
 @app.put("/usuarios/{id}")
@@ -222,15 +190,6 @@ def obtener_kdramas():
     return get_kdramas()
 
 
-@app.get("/kdramas/{id}")
-def obtener_kdrama(id: int):
-    dramas = get_kdramas()
-    for d in dramas:
-        if int(d["id"]) == id:
-            return d
-    raise HTTPException(status_code=404, detail="K-drama no encontrado")
-
-
 @app.get("/kdramas/buscar/{nombre}")
 def buscar_kdrama(nombre: str):
     dramas = get_kdramas()
@@ -241,6 +200,15 @@ def buscar_kdrama(nombre: str):
 def buscar_genero(genero: str):
     dramas = get_kdramas()
     return [d for d in dramas if genero.lower() in d["genero"].lower()]
+
+
+@app.get("/kdramas/{id}")
+def obtener_kdrama(id: int):
+    dramas = get_kdramas()
+    for d in dramas:
+        if int(d["id"]) == id:
+            return d
+    raise HTTPException(status_code=404, detail="K-drama no encontrado")
 
 
 # ========== KDRAMAS (SOLO ADMIN) ==========
@@ -265,6 +233,46 @@ def eliminar_kdrama(id: int, admin=Depends(get_current_admin)):
     return {"mensaje": "K-drama eliminado"}
 
 
+# ========== PERSONALIDAD PARA USUARIO LOGUEADO (antes de /{id}) ==========
+@app.get("/personalidad/mi-personalidad")
+def mi_personalidad(current_user=Depends(get_current_user)):
+    personalidades = get_personalidades()
+    mi = next(
+        (p for p in personalidades if int(p["id_usuario"]) == current_user["id"]),
+        None
+    )
+    if not mi:
+        return {"mensaje": "No tienes personalidad registrada", "tiene": False}
+    return {"tiene": True, "personalidad": mi}
+
+
+class PersonalidadInput(BaseModel):
+    romantico: bool
+    aventurero: bool
+    sensible: bool
+    extrovertido: bool
+    oscuro: bool
+    intenso: bool
+
+
+@app.post("/personalidad/mi-personalidad")
+def crear_mi_personalidad(personalidad_data: PersonalidadInput, current_user=Depends(get_current_user)):
+    personalidades = get_personalidades()
+    existe = next(
+        (p for p in personalidades if int(p["id_usuario"]) == current_user["id"]),
+        None
+    )
+    data = personalidad_data.model_dump()
+    data["id_usuario"] = current_user["id"]
+
+    if existe:
+        actualizado = update_personalidad(existe["id"], data)
+        return {"mensaje": "Personalidad actualizada", "personalidad": actualizado}
+    else:
+        nueva = create_personalidad(data)
+        return {"mensaje": "Personalidad creada", "personalidad": nueva}
+
+
 # ========== PERSONALIDAD (PÚBLICOS) ==========
 @app.get("/personalidad")
 def obtener_personalidades():
@@ -282,7 +290,7 @@ def obtener_personalidad(id: int):
 
 # ========== PERSONALIDAD (SOLO ADMIN) ==========
 @app.post("/personalidad")
-def crear_personalidad(p: Personalidad, admin=Depends(get_current_admin)):
+def crear_personalidad_admin(p: Personalidad, admin=Depends(get_current_admin)):
     usuarios = get_usuarios()
     existe = any(int(u["id"]) == p.id_usuario for u in usuarios)
     if not existe:
@@ -306,38 +314,32 @@ def eliminar_personalidad(id: int, admin=Depends(get_current_admin)):
     return {"mensaje": "Personalidad desactivada"}
 
 
-# ========== PERSONALIDAD PARA USUARIO LOGUEADO ==========
-@app.get("/personalidad/mi-personalidad")
-def mi_personalidad(current_user=Depends(get_current_user)):
+# ========== RECOMENDACIONES PARA USUARIO LOGUEADO (antes de /{id_usuario}) ==========
+@app.get("/recomendar/mis-recomendaciones")
+def mis_recomendaciones(current_user=Depends(get_current_user)):
+    dramas = get_kdramas()
     personalidades = get_personalidades()
-    mi_personalidad = next(
+    mi = next(
         (p for p in personalidades if int(p["id_usuario"]) == current_user["id"]),
         None
     )
-    if not mi_personalidad:
-        return {"mensaje": "No tienes personalidad registrada", "tiene": False}
-    return {"tiene": True, "personalidad": mi_personalidad}
+    if not mi:
+        raise HTTPException(status_code=404, detail="No tienes personalidad registrada")
+    resultado = []
+    for d in dramas:
+        genero = d["genero"].lower()
+        if mi.get("romantico") and genero == "romance":
+            resultado.append(d)
+        elif mi.get("aventurero") and genero == "accion":
+            resultado.append(d)
+        elif mi.get("oscuro") and genero in ["terror", "suspenso"]:
+            resultado.append(d)
+        elif mi.get("intenso") and int(d["nivel_emocional"]) >= 8:
+            resultado.append(d)
+    return {"recomendaciones": resultado, "total": len(resultado)}
 
 
-@app.post("/personalidad/mi-personalidad")
-def crear_mi_personalidad(personalidad_data: dict, current_user=Depends(get_current_user)):
-    personalidades = get_personalidades()
-    existe = next(
-        (p for p in personalidades if int(p["id_usuario"]) == current_user["id"]),
-        None
-    )
-
-    personalidad_data["id_usuario"] = current_user["id"]
-
-    if existe:
-        actualizado = update_personalidad(existe["id"], personalidad_data)
-        return {"mensaje": "Personalidad actualizada", "personalidad": actualizado}
-    else:
-        nueva = create_personalidad(personalidad_data)
-        return {"mensaje": "Personalidad creada", "personalidad": nueva}
-
-
-# ========== RECOMENDADOR (PÚBLICO PARA ADMIN) ==========
+# ========== RECOMENDADOR (PÚBLICO) ==========
 @app.get("/recomendar/{id_usuario}")
 def recomendar(id_usuario: int):
     dramas = get_kdramas()
@@ -351,50 +353,22 @@ def recomendar(id_usuario: int):
     resultado = []
     for d in dramas:
         genero = d["genero"].lower()
-        romantico = str(personalidad["romantico"]) == "True"
-        aventurero = str(personalidad["aventurero"]) == "True"
-        oscuro = str(personalidad["oscuro"]) == "True"
-        intenso = str(personalidad["intenso"]) == "True"
-        if romantico and genero == "romance":
+        if personalidad.get("romantico") and genero == "romance":
             resultado.append(d)
-        elif aventurero and genero == "accion":
+        elif personalidad.get("aventurero") and genero == "accion":
             resultado.append(d)
-        elif oscuro and genero in ["terror", "suspenso"]:
+        elif personalidad.get("oscuro") and genero in ["terror", "suspenso"]:
             resultado.append(d)
-        elif intenso and int(d["nivel_emocional"]) >= 8:
+        elif personalidad.get("intenso") and int(d["nivel_emocional"]) >= 8:
             resultado.append(d)
     return resultado
 
 
-# ========== RECOMENDACIONES PARA USUARIO LOGUEADO ==========
-@app.get("/recomendar/mis-recomendaciones")
-def mis_recomendaciones(current_user=Depends(get_current_user)):
-    dramas = get_kdramas()
-    personalidades = get_personalidades()
-
-    mi_personalidad = next(
-        (p for p in personalidades if int(p["id_usuario"]) == current_user["id"]),
-        None
-    )
-
-    if not mi_personalidad:
-        raise HTTPException(status_code=404, detail="No tienes personalidad registrada")
-
-    resultado = []
-    for d in dramas:
-        genero = d["genero"].lower()
-        romantico = mi_personalidad.get("romantico", False)
-        aventurero = mi_personalidad.get("aventurero", False)
-        oscuro = mi_personalidad.get("oscuro", False)
-        intenso = mi_personalidad.get("intenso", False)
-
-        if romantico and genero == "romance":
-            resultado.append(d)
-        elif aventurero and genero == "accion":
-            resultado.append(d)
-        elif oscuro and genero in ["terror", "suspenso"]:
-            resultado.append(d)
-        elif intenso and int(d["nivel_emocional"]) >= 8:
-            resultado.append(d)
-
-    return {"recomendaciones": resultado, "total": len(resultado)}
+# ========== FRONTEND HTML (al final para no interceptar rutas de la API) ==========
+@app.get("/{html_file}")
+async def serve_html(html_file: str):
+    if html_file.endswith('.html'):
+        file_path = f"frontend/{html_file}"
+        if os.path.exists(file_path):
+            return FileResponse(file_path)
+    raise HTTPException(status_code=404, detail="Página no encontrada")
