@@ -1,10 +1,78 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Personalidad</title>
+
+    <link rel="stylesheet" href="../css/styles.css">
 </head>
+
 <body>
+
+<header class="header">
+    <h1>❤️ Personalidad del Usuario</h1>
+</header>
+
+<div class="container">
+
+    <div class="card">
+        <h2>Asignar Personalidad</h2>
+
+        <form id="formPersonalidad">
+
+            <div class="form-group">
+                <label>ID Usuario</label>
+                <input type="number" id="id_usuario" required>
+            </div>
+
+            <label>Tipos de personalidad</label>
+
+            <div class="checks">
+
+                <label><input type="checkbox" id="romantico"> Romántico</label>
+                <label><input type="checkbox" id="aventurero"> Aventurero</label>
+                <label><input type="checkbox" id="sensible"> Sensible</label>
+                <label><input type="checkbox" id="extrovertido"> Extrovertido</label>
+                <label><input type="checkbox" id="oscuro"> Oscuro</label>
+                <label><input type="checkbox" id="intenso"> Intenso</label>
+
+            </div>
+
+            <button type="submit" class="btn">Guardar Personalidad</button>
+        </form>
+    </div>
+
+    <div class="card">
+
+        <div class="card-header">
+            <h2>Lista de Personalidades</h2>
+            <button class="btn" onclick="cargarPersonalidades()">Actualizar</button>
+        </div>
+
+        <table class="tabla">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Rom</th>
+                    <th>Avent</th>
+                    <th>Sens</th>
+                    <th>Ext</th>
+                    <th>Osc</th>
+                    <th>Int</th>
+                </tr>
+            </thead>
+
+            <tbody id="tablaPersonalidad"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script src="../js/personalidad.js"></script>
 
 </body>
 </html>

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from sqlmodel import SQLModel
 from src.database import engine
-from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from src.models.models import Usuario,Personalidad, KDrama
 
 from src.operations.usuario_operations import (
@@ -31,9 +31,7 @@ SQLModel.metadata.create_all(engine)
 # USUARIOS
 # -----------------------------
 
-@app.get("/")
-def inicio():
-    return FileResponse("frontend/usuarios.html")
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
 
 @app.post("/usuarios", response_model=Usuario)
 def crear_usuario(usuario: Usuario):
