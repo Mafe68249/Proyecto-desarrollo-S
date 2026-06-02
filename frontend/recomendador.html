@@ -1,68 +1,61 @@
-const API = "https://proyecto-desarrollo-s.onrender.com";
-
-const form = document.getElementById("formPersonalidad");
-
-form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const data = {
-        id_usuario: parseInt(document.getElementById("id_usuario").value),
-        romantico: document.getElementById("romantico").checked,
-        aventurero: document.getElementById("aventurero").checked,
-        sensible: document.getElementById("sensible").checked,
-        extrovertido: document.getElementById("extrovertido").checked,
-        oscuro: document.getElementById("oscuro").checked,
-        intenso: document.getElementById("intenso").checked,
-    };
-
-    try {
-        const res = await fetch(API + "/personalidad", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data)
-        });
-
-        if (!res.ok) throw new Error();
-
-        alert("Personalidad guardada");
-        form.reset();
-        cargarPersonalidades();
-
-    } catch (err) {
-        console.error(err);
-        alert("Error al guardar");
-    }
-});
-
-async function cargarPersonalidades() {
-
-    try {
-        const res = await fetch(API + "/personalidad");
-        const data = await res.json();
-
-        const tabla = document.getElementById("tablaPersonalidad");
-        tabla.innerHTML = "";
-
-        data.forEach(p => {
-            tabla.innerHTML += `
-                <tr>
-                    <td>${p.id}</td>
-                    <td>${p.id_usuario}</td>
-                    <td>${p.romantico ? "✔" : ""}</td>
-                    <td>${p.aventurero ? "✔" : ""}</td>
-                    <td>${p.sensible ? "✔" : ""}</td>
-                    <td>${p.extrovertido ? "✔" : ""}</td>
-                    <td>${p.oscuro ? "✔" : ""}</td>
-                    <td>${p.intenso ? "✔" : ""}</td>
-                </tr>
-            `;
-        });
-
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-cargarPersonalidades();
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Recomendador de K-Dramas</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <header class="header">
+        <h1>🎯 Recomendador de K-Dramas</h1>
+    </header>
+    <div class="container">
+        <div class="card">
+            <h2>Buscar Recomendaciones</h2>
+            <div class="form-group">
+                <label>ID del Usuario</label>
+                <input type="number" id="id_usuario" placeholder="Ej: 1" required>
+            </div>
+            <button class="btn" onclick="obtenerRecomendaciones()">Obtener Recomendaciones</button>
+        </div>
+        <div class="card">
+            <h2>🎬 K-Dramas Recomendados</h2>
+            <div id="recomendaciones" style="margin-top: 1rem;">
+                <p style="color: #666;">Ingresa un ID de usuario para ver recomendaciones</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        const API = window.location.origin;
+        async function obtenerRecomendaciones() {
+            const id_usuario = document.getElementById("id_usuario").value;
+            if (!id_usuario) {
+                alert("Ingresa un ID de usuario");
+                return;
+            }
+            try {
+                const response = await fetch(`${API}/recomendar/${id_usuario}`);
+                if (!response.ok) {
+                    if (response.status === 404) alert("Usuario sin personalidad registrada");
+                    else throw new Error();
+                    return;
+                }
+                const recs = await response.json();
+                const container = document.getElementById("recomendaciones");
+                if (recs.length === 0) {
+                    container.innerHTML = '<p>No hay recomendaciones para este usuario</p>';
+                    return;
+                }
+                container.innerHTML = recs.map(d => `
+                    <div style="background:#f8f9fa;border-radius:10px;padding:1rem;margin-bottom:0.5rem;border-left:4px solid #ff6b6b;">
+                        <h3>${d.nombre}</h3>
+                        <p>Género: ${d.genero} | Nivel emocional: ${d.nivel_emocional}/10</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                alert("Error al obtener recomendaciones");
+            }
+        }
+    </script>
+</body>
+</html>

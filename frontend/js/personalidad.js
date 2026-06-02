@@ -1,4 +1,4 @@
-const API = "https://proyecto-desarrollo-s.onrender.com";
+const API = window.location.origin;
 
 const form = document.getElementById("formPersonalidad");
 

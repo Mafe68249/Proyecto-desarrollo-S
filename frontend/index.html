@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Recomendación de K-Dramas</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card-modulo {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .card-modulo:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+        .card-modulo h2 {
+            color: #ff6b6b;
+            margin-bottom: 1rem;
+        }
+        .card-modulo p {
+            color: #666;
+            line-height: 1.6;
+        }
+        .icono {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        .header p {
+            margin: 0.5rem 0 0;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>🎬 Sistema de Recomendación de K-Dramas</h1>
+        <p>Gestiona usuarios, personalidades y descubre tus próximos dramas favoritos</p>
+    </header>
+
+    <div class="dashboard">
+        <a href="/usuarios.html" class="card-modulo">
+            <div class="icono">👥</div>
+            <h2>Gestión de Usuarios</h2>
+            <p>Crear, ver y administrar usuarios del sistema</p>
+        </a>
+
+        <a href="/kdramas.html" class="card-modulo">
+            <div class="icono">🎬</div>
+            <h2>Gestión de K-Dramas</h2>
+            <p>Agregar, actualizar y mantener tu catálogo de K-Dramas</p>
+        </a>
+
+        <a href="/personalidad.html" class="card-modulo">
+            <div class="icono">❤️</div>
+            <h2>Personalidad de Usuario</h2>
+            <p>Asignar rasgos de personalidad a cada usuario</p>
+        </a>
+
+        <a href="/recomendador.html" class="card-modulo">
+            <div class="icono">🎯</div>
+            <h2>Recomendador</h2>
+            <p>Obtén recomendaciones personalizadas de K-Dramas</p>
+        </a>
+    </div>
+
+    <footer style="text-align: center; padding: 2rem; color: #666;">
+        <p>📊 Sistema basado en personalidad | Encuentra tu próximo K-Drama perfecto</p>
+    </footer>
+</body>
+</html>
