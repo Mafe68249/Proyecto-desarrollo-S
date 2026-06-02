@@ -114,15 +114,25 @@ async def serve_html(html_file: str):
 
 # ========== AUTENTICACIÓN ==========
 @app.post("/login")
+@app.post("/login")
 def login(email: str, password: str):
+    from src.operations.usuario_operations import get_usuario_by_email
+
+    print(f"Intentando login con email: {email}")
+
     usuario = get_usuario_by_email(email)
     if not usuario:
+        print("Usuario no encontrado")
         raise HTTPException(status_code=401, detail="Email incorrecto")
 
+    print(f"Usuario encontrado: {usuario.nombre}")
+
     if not verify_password(password, usuario.password):
+        print("Contraseña incorrecta")
         raise HTTPException(status_code=401, detail="Contraseña incorrecta")
 
     token = create_access_token({"sub": str(usuario.id), "rol": usuario.rol})
+
     return {
         "access_token": token,
         "token_type": "bearer",
@@ -130,7 +140,6 @@ def login(email: str, password: str):
         "nombre": usuario.nombre,
         "rol": usuario.rol
     }
-
 
 @app.get("/usuarios/me")
 def get_me(current_user=Depends(get_current_user)):

@@ -26,7 +26,12 @@ def get_usuarios():
         usuarios = session.exec(statement).all()
         return [{k: v for k, v in u.model_dump().items() if k != "password"} for u in usuarios]
 
+
 def get_usuario_by_email(email: str):
+    from src.database import engine
+    from src.models.models import Usuario
+    from sqlmodel import Session, select
+
     with Session(engine) as session:
         statement = select(Usuario).where(Usuario.email == email)
         return session.exec(statement).first()
