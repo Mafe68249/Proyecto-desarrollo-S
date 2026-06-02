@@ -2,55 +2,53 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Usuarios</title>
-
+    <title>Gestión de Usuarios</title>
     <link rel="stylesheet" href="/css/styles.css">
 </head>
-
 <body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="logo">🎬 K-Drama Hub</a>
+            <div class="nav-links">
+                <a href="/">Inicio</a>
+                <a href="/usuarios.html" class="active">👥 Usuarios</a>
+                <a href="/kdramas.html">🎬 K-Dramas</a>
+                <a href="/personalidad.html">❤️ Personalidad</a>
+                <a href="/recomendar.html">🎯 Recomendador</a>
+            </div>
+        </div>
+    </nav>
 
-    <h1>Gestión de Usuarios</h1>
+    <div class="container">
+        <div class="card">
+            <h2>👤 Crear Usuario</h2>
+            <form id="formUsuario">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Edad</label>
+                    <input type="number" id="edad" required>
+                </div>
+                <button type="submit" class="btn">Crear Usuario</button>
+            </form>
+        </div>
 
-    <section>
-        <h2>Crear Usuario</h2>
-
-        <form id="formUsuario">
-            <label>Nombre</label>
-            <input type="text" id="nombre" placeholder="Nombre" required>
-
-            <label>Edad</label>
-            <input type="number" id="edad" placeholder="Edad" required>
-
-            <button type="submit">
-                Crear Usuario
-            </button>
-        </form>
-    </section>
-
-    <section>
-        <h2>Lista de Usuarios</h2>
-
-        <button onclick="cargarUsuarios()">
-            Actualizar Lista
-        </button>
-
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Edad</th>
-                </tr>
-            </thead>
-
-            <tbody id="tablaUsuarios">
-            </tbody>
-
-        </table>
-    </section>
+        <div class="card">
+            <div class="card-header">
+                <h2>📋 Lista de Usuarios</h2>
+                <button class="btn btn-outline" onclick="cargarUsuarios()">Actualizar</button>
+            </div>
+            <table class="tabla">
+                <thead>
+                    <tr><th>ID</th><th>Nombre</th><th>Edad</th></tr>
+                </thead>
+                <tbody id="tablaUsuarios"></tbody>
+            </table>
+        </div>
+    </div>
 
     <script src="/js/usuarios.js"></script>
-
 </body>
 </html>

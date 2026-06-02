@@ -3,95 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Recomendación de K-Dramas</title>
+    <title>K-Drama Hub - Tu plataforma de K-Dramas</title>
     <link rel="stylesheet" href="/css/styles.css">
     <style>
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            padding: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .card-modulo {
-            background: white;
-            border-radius: 15px;
-            padding: 2rem;
+        .hero {
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
-            text-decoration: none;
-            color: inherit;
-            display: block;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, rgba(229,9,20,0.2), rgba(0,0,0,0.8));
+            border-radius: 20px;
+            margin-bottom: 3rem;
         }
-        .card-modulo:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
-        }
-        .card-modulo h2 {
-            color: #ff6b6b;
-            margin-bottom: 1rem;
-        }
-        .card-modulo p {
-            color: #666;
-            line-height: 1.6;
-        }
-        .icono {
+        .hero h1 {
             font-size: 3rem;
             margin-bottom: 1rem;
         }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
+        .hero p {
+            font-size: 1.2rem;
+            color: #ccc;
+        }
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            background: #1f1f2e;
+            padding: 1rem 2rem;
+            border-radius: 10px;
             text-align: center;
         }
-        .header h1 {
-            margin: 0;
+        .stat-number {
             font-size: 2rem;
+            font-weight: bold;
+            color: #e50914;
         }
-        .header p {
-            margin: 0.5rem 0 0;
-            opacity: 0.9;
+        .stat-label {
+            color: #aaa;
         }
     </style>
 </head>
 <body>
-    <header class="header">
-        <h1>🎬 Sistema de Recomendación de K-Dramas</h1>
-        <p>Gestiona usuarios, personalidades y descubre tus próximos dramas favoritos</p>
-    </header>
+    <!-- BARRA DE NAVEGACIÓN -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="logo">🎬 K-Drama Hub</a>
+            <div class="nav-links">
+                <a href="/" class="active">Inicio</a>
+                <a href="/usuarios.html">👥 Usuarios</a>
+                <a href="/kdramas.html">🎬 K-Dramas</a>
+                <a href="/personalidad.html">❤️ Personalidad</a>
+                <a href="/recomendar.html">🎯 Recomendador</a>
+            </div>
+        </div>
+    </nav>
 
-    <div class="dashboard">
-        <a href="/usuarios.html" class="card-modulo">
-            <div class="icono">👥</div>
-            <h2>Gestión de Usuarios</h2>
-            <p>Crear, ver y administrar usuarios del sistema</p>
-        </a>
+    <!-- HERO SECTION -->
+    <div class="container">
+        <div class="hero">
+            <h1>🎬 Descubre tu próximo K-Drama</h1>
+            <p>Encuentra dramas según tu personalidad y emociones</p>
+            <div class="stats" id="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="kdramaCount">0</div>
+                    <div class="stat-label">K-Dramas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="userCount">0</div>
+                    <div class="stat-label">Usuarios</div>
+                </div>
+            </div>
+        </div>
 
-        <a href="/kdramas.html" class="card-modulo">
-            <div class="icono">🎬</div>
-            <h2>Gestión de K-Dramas</h2>
-            <p>Agregar, actualizar y mantener tu catálogo de K-Dramas</p>
-        </a>
-
-        <a href="/personalidad.html" class="card-modulo">
-            <div class="icono">❤️</div>
-            <h2>Personalidad de Usuario</h2>
-            <p>Asignar rasgos de personalidad a cada usuario</p>
-        </a>
-
-        <a href="/recomendador.html" class="card-modulo">
-            <div class="icono">🎯</div>
-            <h2>Recomendador</h2>
-            <p>Obtén recomendaciones personalizadas de K-Dramas</p>
-        </a>
+        <!-- GRID DE K-DRAMAS -->
+        <h2 class="section-title">📺 Todos los K-Dramas</h2>
+        <div class="kdrama-grid" id="kdramaGrid">
+            <div style="text-align: center; grid-column: 1/-1; color: #aaa;">
+                Cargando K-Dramas...
+            </div>
+        </div>
     </div>
 
-    <footer style="text-align: center; padding: 2rem; color: #666;">
-        <p>📊 Sistema basado en personalidad | Encuentra tu próximo K-Drama perfecto</p>
-    </footer>
+    <script>
+        const API = window.location.origin;
+
+        // Cargar estadísticas y K-Dramas al inicio
+        async function cargarEstadisticas() {
+            try {
+                const [kdramasRes, usuariosRes] = await Promise.all([
+                    fetch(API + "/kdramas"),
+                    fetch(API + "/usuarios")
+                ]);
+                const kdramas = await kdramasRes.json();
+                const usuarios = await usuariosRes.json();
+
+                document.getElementById("kdramaCount").textContent = kdramas.length || 0;
+                document.getElementById("userCount").textContent = usuarios.length || 0;
+            } catch (error) {
+                console.error("Error al cargar estadísticas:", error);
+            }
+        }
+
+        // Cargar y mostrar K-Dramas en grid
+        async function cargarKDramas() {
+            try {
+                const response = await fetch(API + "/kdramas");
+                const kdramas = await response.json();
+
+                const grid = document.getElementById("kdramaGrid");
+
+                if (!kdramas || kdramas.length === 0) {
+                    grid.innerHTML = '<div style="text-align: center; grid-column: 1/-1;">No hay K-Dramas aún. ¡Agrega uno desde el panel de gestión!</div>';
+                    return;
+                }
+
+                grid.innerHTML = kdramas.map(kd => `
+                    <div class="kdrama-card">
+                        <div class="kdrama-image">
+                            ${getIconoPorGenero(kd.genero)}
+                        </div>
+                        <div class="kdrama-info">
+                            <div class="kdrama-title">${escapeHtml(kd.nombre)}</div>
+                            <div class="kdrama-genre">${kd.genero}</div>
+                            <div class="kdrama-emotional">Nivel emocional: ${kd.nivel_emocional}/10</div>
+                            <div class="emotional-bar">
+                                <div class="emotional-fill" style="width: ${(kd.nivel_emocional / 10) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error("Error al cargar K-Dramas:", error);
+                document.getElementById("kdramaGrid").innerHTML = '<div style="text-align: center; grid-column: 1/-1; color: #e50914;">Error al cargar los K-Dramas</div>';
+            }
+        }
+
+        function getIconoPorGenero(genero) {
+            const iconos = {
+                'romance': '💕',
+                'accion': '⚔️',
+                'comedia': '😂',
+                'terror': '😱',
+                'suspenso': '🔪',
+                'drama': '🎭',
+                'misterio': '🕵️',
+                'thriller': '🔫'
+            };
+            const generoLower = genero?.toLowerCase() || '';
+            return iconos[generoLower] || '🎬';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Inicializar
+        cargarEstadisticas();
+        cargarKDramas();
+    </script>
 </body>
 </html>
