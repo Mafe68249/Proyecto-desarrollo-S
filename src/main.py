@@ -146,6 +146,33 @@ def get_me(current_user=Depends(get_current_user)):
     return current_user
 
 
+# ========== REGISTRO DE USUARIOS ==========
+@app.post("/registro")
+def registro(nombre: str, edad: int, email: str, password: str):
+    from src.operations.usuario_operations import get_usuario_by_email, create_usuario
+    from passlib.context import CryptContext
+
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+    # Verificar si ya existe
+    existe = get_usuario_by_email(email)
+    if existe:
+        raise HTTPException(status_code=400, detail="El email ya está registrado")
+
+    # Encriptar contraseña
+    hashed_password = pwd_context.hash(password)
+
+    # Crear usuario (rol por defecto "usuario")
+    nuevo_usuario = create_usuario({
+        "nombre": nombre,
+        "edad": edad,
+        "email": email,
+        "password": hashed_password,
+        "rol": "usuario"
+    })
+
+    return {"mensaje": "Usuario creado exitosamente", "usuario": nuevo_usuario}
+
 # ========== USUARIOS (PÚBLICOS) ==========
 @app.get("/usuarios")
 def obtener_usuarios():
