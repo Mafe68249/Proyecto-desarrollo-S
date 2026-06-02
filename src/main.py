@@ -42,7 +42,7 @@ create_tables()  # ✅ CORREGIDO: ahora usa la función
 
 # ========== SERVIR ARCHIVOS ESTÁTICOS ==========
 app.mount("/css", StaticFiles(directory="frontend/css"), name="css")
-app.mount("/js", StaticFiles(directory="frontend/js"), name="js")
+
 
 # ========== CONFIGURACIÓN JWT ==========
 SECRET_KEY = "tu-clave-secreta-cambiala-en-produccion-123456"
@@ -113,7 +113,7 @@ async def serve_html(html_file: str):
 
 
 # ========== AUTENTICACIÓN ==========
-@app.post("/login")
+
 @app.post("/login")
 def login(email: str, password: str):
     from src.operations.usuario_operations import get_usuario_by_email

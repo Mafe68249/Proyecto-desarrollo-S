@@ -4,6 +4,109 @@
     <meta charset="UTF-8">
     <title>Panel Admin - K-Drama Hub</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .admin-section {
+            margin-bottom: 2rem;
+        }
+        .kdrama-form {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(200, 132, 252, 0.2);
+        }
+        .kdrama-form h3 {
+            color: #7c3aed;
+            margin-bottom: 1rem;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .kdrama-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .kdrama-item {
+            background: #f9f8ff;
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            border: 1px solid #e8daff;
+        }
+        .kdrama-item-image {
+            width: 60px;
+            height: 80px;
+            background: #e8daff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            overflow: hidden;
+        }
+        .kdrama-item-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .kdrama-item-info {
+            flex: 1;
+        }
+        .kdrama-item-info h4 {
+            margin-bottom: 0.3rem;
+            color: #4a4a6a;
+        }
+        .kdrama-item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .btn-small {
+            padding: 0.3rem 0.8rem;
+            font-size: 0.8rem;
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #e50914, #ff0a1f);
+        }
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1001;
+            overflow: auto;
+        }
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            max-width: 500px;
+            border-radius: 20px;
+            padding: 2rem;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .preview-image {
+            margin-top: 1rem;
+            max-width: 200px;
+            border-radius: 10px;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -16,49 +119,127 @@
     <div class="container">
         <div class="hero">
             <h1>👑 Panel de Administración</h1>
-            <p>Gestiona usuarios, K-Dramas y personalidades</p>
+            <p>Gestiona K-Dramas, usuarios y personalidades</p>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-            <a href="/kdramas.html" class="kdrama-card" style="text-decoration: none; text-align: center; padding: 2rem;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">🎬</div>
-                <h3>Gestión de K-Dramas</h3>
-                <p style="color: #8b8baa;">Agregar, editar o eliminar K-Dramas</p>
-            </a>
-
-            <div class="kdrama-card" style="text-align: center; padding: 2rem; cursor: pointer;" onclick="abrirGestionUsuarios()">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">👥</div>
-                <h3>Gestión de Usuarios</h3>
-                <p style="color: #8b8baa;">Ver todos los usuarios del sistema</p>
+        <!-- ========== GESTIÓN DE K-DRAMAS ========== -->
+        <div class="admin-section">
+            <div class="kdrama-form">
+                <h3>🎬 Agregar Nuevo K-Drama</h3>
+                <form id="formKDrama">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <input type="text" id="kdrama_nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Género</label>
+                            <select id="kdrama_genero">
+                                <option>romance</option>
+                                <option>accion</option>
+                                <option>comedia</option>
+                                <option>drama</option>
+                                <option>terror</option>
+                                <option>suspenso</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nivel emocional (1-10)</label>
+                            <input type="number" id="kdrama_nivel" min="1" max="10" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Imagen (opcional)</label>
+                            <input type="file" id="kdrama_imagen" accept="image/*">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">➕ Agregar K-Drama</button>
+                </form>
             </div>
 
-            <div class="kdrama-card" style="text-align: center; padding: 2rem; cursor: pointer;" onclick="abrirGestionPersonalidad()">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">❤️</div>
-                <h3>Gestión de Personalidad</h3>
-                <p style="color: #8b8baa;">Ver personalidades de usuarios</p>
+            <div class="card">
+                <div class="card-header">
+                    <h2>📺 Lista de K-Dramas</h2>
+                    <button class="btn btn-outline" onclick="cargarKDramas()">Actualizar</button>
+                </div>
+                <div id="listaKDramas" class="kdrama-list">
+                    <p>Cargando K-Dramas...</p>
+                </div>
             </div>
         </div>
 
-        <!-- Modal de Usuarios -->
-        <div id="modalUsuarios" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; overflow: auto;">
-            <div style="background: white; margin: 50px auto; max-width: 800px; border-radius: 20px; padding: 2rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <!-- ========== GESTIÓN DE USUARIOS ========== -->
+        <div class="admin-section">
+            <div class="card">
+                <div class="card-header">
                     <h2>👥 Usuarios</h2>
-                    <button onclick="cerrarModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">✖️</button>
+                    <button class="btn btn-outline" onclick="abrirGestionUsuarios()">Ver Usuarios</button>
                 </div>
-                <div id="listaUsuarios" style="max-height: 500px; overflow-y: auto;"></div>
             </div>
         </div>
 
-        <!-- Modal de Personalidades -->
-        <div id="modalPersonalidad" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; overflow: auto;">
-            <div style="background: white; margin: 50px auto; max-width: 800px; border-radius: 20px; padding: 2rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <!-- ========== GESTIÓN DE PERSONALIDADES ========== -->
+        <div class="admin-section">
+            <div class="card">
+                <div class="card-header">
                     <h2>❤️ Personalidades</h2>
-                    <button onclick="cerrarModalPersonalidad()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">✖️</button>
+                    <button class="btn btn-outline" onclick="abrirGestionPersonalidad()">Ver Personalidades</button>
                 </div>
-                <div id="listaPersonalidades" style="max-height: 500px; overflow-y: auto;"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal Usuarios -->
+    <div id="modalUsuarios" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>👥 Usuarios</h2>
+                <button onclick="cerrarModal('modalUsuarios')" style="background: none; border: none; font-size: 1.5rem;">✖️</button>
+            </div>
+            <div id="listaUsuarios"></div>
+        </div>
+    </div>
+
+    <!-- Modal Personalidades -->
+    <div id="modalPersonalidad" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>❤️ Personalidades</h2>
+                <button onclick="cerrarModal('modalPersonalidad')" style="background: none; border: none; font-size: 1.5rem;">✖️</button>
+            </div>
+            <div id="listaPersonalidades"></div>
+        </div>
+    </div>
+
+    <!-- Modal Editar K-Drama -->
+    <div id="modalEditarKDrama" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>✏️ Editar K-Drama</h2>
+                <button onclick="cerrarModal('modalEditarKDrama')" style="background: none; border: none; font-size: 1.5rem;">✖️</button>
+            </div>
+            <form id="formEditarKDrama">
+                <input type="hidden" id="edit_id">
+                <div class="form-group">
+                    <label>Nombre</label>
+                    <input type="text" id="edit_nombre" required>
+                </div>
+                <div class="form-group">
+                    <label>Género</label>
+                    <select id="edit_genero">
+                        <option>romance</option>
+                        <option>accion</option>
+                        <option>comedia</option>
+                        <option>drama</option>
+                        <option>terror</option>
+                        <option>suspenso</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nivel emocional (1-10)</label>
+                    <input type="number" id="edit_nivel" min="1" max="10" required>
+                </div>
+                <button type="submit" class="btn">💾 Guardar Cambios</button>
+            </form>
         </div>
     </div>
 
@@ -85,6 +266,168 @@
             window.location.href = "/";
         }
 
+        function cerrarModal(modalId) {
+            document.getElementById(modalId).style.display = "none";
+        }
+
+        // Convertir imagen a Base64
+        function convertirABase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // CREAR K-Drama
+        document.getElementById("formKDrama").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const nombre = document.getElementById("kdrama_nombre").value;
+            const genero = document.getElementById("kdrama_genero").value;
+            const nivel_emocional = parseInt(document.getElementById("kdrama_nivel").value);
+            const imagenFile = document.getElementById("kdrama_imagen").files[0];
+
+            let imagenBase64 = null;
+            if (imagenFile) {
+                imagenBase64 = await convertirABase64(imagenFile);
+            }
+
+            try {
+                const response = await fetch(API + "/kdramas", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        nombre: nombre,
+                        genero: genero,
+                        nivel_emocional: nivel_emocional,
+                        imagen_base64: imagenBase64
+                    })
+                });
+
+                if (!response.ok) throw new Error();
+
+                alert("✅ K-Drama creado exitosamente!");
+                document.getElementById("formKDrama").reset();
+                cargarKDramas();
+
+            } catch (error) {
+                alert("❌ Error al crear K-Drama");
+            }
+        });
+
+        // CARGAR K-Dramas
+        async function cargarKDramas() {
+            try {
+                const response = await fetch(API + "/kdramas");
+                const kdramas = await response.json();
+
+                const container = document.getElementById("listaKDramas");
+
+                if (!kdramas || kdramas.length === 0) {
+                    container.innerHTML = '<p class="empty-message">No hay K-Dramas registrados</p>';
+                    return;
+                }
+
+                container.innerHTML = kdramas.map(kd => `
+                    <div class="kdrama-item">
+                        <div class="kdrama-item-image">
+                            ${kd.imagen_base64 ?
+                                `<img src="${kd.imagen_base64}" alt="${kd.nombre}">` :
+                                `<span>🎬</span>`}
+                        </div>
+                        <div class="kdrama-item-info">
+                            <h4>${kd.nombre}</h4>
+                            <small>${kd.genero} | 💖 ${kd.nivel_emocional}/10</small>
+                        </div>
+                        <div class="kdrama-item-actions">
+                            <button class="btn btn-small btn-warning" onclick="abrirEditarKDrama(${kd.id})">✏️</button>
+                            <button class="btn btn-small btn-danger" onclick="eliminarKDrama(${kd.id})">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById("listaKDramas").innerHTML = '<p class="error-message">Error al cargar K-Dramas</p>';
+            }
+        }
+
+        // ABRIR modal de edición
+        async function abrirEditarKDrama(id) {
+            try {
+                const response = await fetch(API + `/kdramas/${id}`);
+                const kd = await response.json();
+
+                document.getElementById("edit_id").value = kd.id;
+                document.getElementById("edit_nombre").value = kd.nombre;
+                document.getElementById("edit_genero").value = kd.genero;
+                document.getElementById("edit_nivel").value = kd.nivel_emocional;
+
+                document.getElementById("modalEditarKDrama").style.display = "block";
+            } catch (error) {
+                alert("Error al cargar el K-Drama");
+            }
+        }
+
+        // ACTUALIZAR K-Drama
+        document.getElementById("formEditarKDrama").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const id = document.getElementById("edit_id").value;
+            const datos = {
+                nombre: document.getElementById("edit_nombre").value,
+                genero: document.getElementById("edit_genero").value,
+                nivel_emocional: parseInt(document.getElementById("edit_nivel").value),
+                imagen_base64: null
+            };
+
+            try {
+                const response = await fetch(API + `/kdramas/${id}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(datos)
+                });
+
+                if (!response.ok) throw new Error();
+
+                alert("✅ K-Drama actualizado!");
+                cerrarModal("modalEditarKDrama");
+                cargarKDramas();
+
+            } catch (error) {
+                alert("❌ Error al actualizar");
+            }
+        });
+
+        // ELIMINAR K-Drama
+        async function eliminarKDrama(id) {
+            if (!confirm("¿Eliminar este K-Drama permanentemente?")) return;
+
+            try {
+                const response = await fetch(API + `/kdramas/${id}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error();
+
+                alert("✅ K-Drama eliminado!");
+                cargarKDramas();
+
+            } catch (error) {
+                alert("❌ Error al eliminar");
+            }
+        }
+
+        // GESTIÓN DE USUARIOS
         async function abrirGestionUsuarios() {
             const modal = document.getElementById("modalUsuarios");
             modal.style.display = "block";
@@ -110,6 +453,7 @@
             }
         }
 
+        // GESTIÓN DE PERSONALIDADES
         async function abrirGestionPersonalidad() {
             const modal = document.getElementById("modalPersonalidad");
             modal.style.display = "block";
@@ -148,13 +492,8 @@
             }
         }
 
-        function cerrarModal() {
-            document.getElementById("modalUsuarios").style.display = "none";
-        }
-
-        function cerrarModalPersonalidad() {
-            document.getElementById("modalPersonalidad").style.display = "none";
-        }
+        // Cargar todo al iniciar
+        cargarKDramas();
     </script>
 </body>
 </html>
