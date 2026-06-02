@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Admin - K-Drama Hub</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="logo">🎬 K-Drama Hub</a>
+            <div class="nav-links" id="navLinks"></div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero" style="text-align: center; padding: 2rem;">
+            <h1>👑 Panel de Administración</h1>
+            <p>Bienvenido, <span id="usuarioNombre"></span></p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+            <a href="/usuarios.html" class="kdrama-card" style="text-decoration: none; text-align: center; padding: 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">👥</div>
+                <h3>Gestión de Usuarios</h3>
+                <p style="color: #aaa;">Crear, editar y eliminar usuarios</p>
+            </a>
+
+            <a href="/kdramas.html" class="kdrama-card" style="text-decoration: none; text-align: center; padding: 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🎬</div>
+                <h3>Gestión de K-Dramas</h3>
+                <p style="color: #aaa;">Agregar y administrar catálogo</p>
+            </a>
+
+            <a href="/personalidad.html" class="kdrama-card" style="text-decoration: none; text-align: center; padding: 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">❤️</div>
+                <h3>Personalidad</h3>
+                <p style="color: #aaa;">Asignar rasgos a usuarios</p>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem("token");
+        const usuarioRol = localStorage.getItem("usuario_rol");
+        const usuarioNombre = localStorage.getItem("usuario_nombre");
+
+        if (!token || usuarioRol !== "admin") {
+            window.location.href = "/login.html";
+        }
+
+        document.getElementById("usuarioNombre").textContent = usuarioNombre || "Admin";
+
+        const navLinks = document.getElementById("navLinks");
+        navLinks.innerHTML = `
+            <a href="/">Inicio</a>
+            <a href="/admin.html" class="active">👑 Admin</a>
+            <a href="/mi-personalidad.html">❤️ Mi Personalidad</a>
+            <a href="/mis-recomendaciones.html">🎯 Mis Recomendaciones</a>
+            <span style="color: #e50914;">👋 ${usuarioNombre}</span>
+            <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
+        `;
+
+        function cerrarSesion() {
+            localStorage.clear();
+            window.location.href = "/login.html";
+            return false;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Personalidad - K-Drama Hub</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .personalidad-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .checks {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .checks label {
+            background: #2a2a3e;
+            padding: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        .checks label:hover {
+            background: #3a3a5e;
+            transform: translateY(-2px);
+        }
+        .checks input[type="checkbox"] {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="logo">🎬 K-Drama Hub</a>
+            <div class="nav-links" id="navLinks"></div>
+        </div>
+    </nav>
+
+    <div class="container personalidad-container">
+        <div class="card">
+            <h2>❤️ Mi Personalidad</h2>
+            <p id="mensajeBienvenida" style="color: #aaa; margin-bottom: 1.5rem;"></p>
+
+            <form id="formPersonalidad">
+                <div class="form-group">
+                    <label>¿Cómo te identificas?</label>
+                    <div class="checks">
+                        <label><input type="checkbox" id="romantico"> 💕 Romántico</label>
+                        <label><input type="checkbox" id="aventurero"> ⚔️ Aventurero</label>
+                        <label><input type="checkbox" id="sensible"> 🌸 Sensible</label>
+                        <label><input type="checkbox" id="extrovertido"> 🎉 Extrovertido</label>
+                        <label><input type="checkbox" id="oscuro"> 🌑 Oscuro</label>
+                        <label><input type="checkbox" id="intenso"> 🔥 Intenso</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn">Guardar mi Personalidad</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API = window.location.origin;
+        const token = localStorage.getItem("token");
+        const usuarioNombre = localStorage.getItem("usuario_nombre");
+        const usuarioRol = localStorage.getItem("usuario_rol");
+
+        if (!token) {
+            window.location.href = "/login.html";
+        }
+
+        // Configurar navegación
+        const navLinks = document.getElementById("navLinks");
+        if (usuarioRol === "admin") {
+            navLinks.innerHTML = `
+                <a href="/">Inicio</a>
+                <a href="/admin.html">👑 Admin</a>
+                <a href="/mi-personalidad.html" class="active">❤️ Mi Personalidad</a>
+                <a href="/mis-recomendaciones.html">🎯 Mis Recomendaciones</a>
+                <span style="color: #e50914;">👋 ${usuarioNombre}</span>
+                <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
+            `;
+        } else {
+            navLinks.innerHTML = `
+                <a href="/">Inicio</a>
+                <a href="/mi-personalidad.html" class="active">❤️ Mi Personalidad</a>
+                <a href="/mis-recomendaciones.html">🎯 Mis Recomendaciones</a>
+                <span style="color: #e50914;">👋 ${usuarioNombre}</span>
+                <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
+            `;
+        }
+
+        document.getElementById("mensajeBienvenida").innerHTML = `Hola, ${usuarioNombre}! Selecciona los rasgos que te definen para obtener recomendaciones personalizadas.`;
+
+        async function cargarMiPersonalidad() {
+            try {
+                const response = await fetch(`${API}/personalidad/mi-personalidad`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (data.tiene) {
+                    const p = data.personalidad;
+                    document.getElementById("romantico").checked = p.romantico === true || p.romantico === "True";
+                    document.getElementById("aventurero").checked = p.aventurero === true || p.aventurero === "True";
+                    document.getElementById("sensible").checked = p.sensible === true || p.sensible === "True";
+                    document.getElementById("extrovertido").checked = p.extrovertido === true || p.extrovertido === "True";
+                    document.getElementById("oscuro").checked = p.oscuro === true || p.oscuro === "True";
+                    document.getElementById("intenso").checked = p.intenso === true || p.intenso === "True";
+                }
+            } catch (error) {
+                console.error("Error al cargar personalidad:", error);
+            }
+        }
+
+        const form = document.getElementById("formPersonalidad");
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const data = {
+                romantico: document.getElementById("romantico").checked,
+                aventurero: document.getElementById("aventurero").checked,
+                sensible: document.getElementById("sensible").checked,
+                extrovertido: document.getElementById("extrovertido").checked,
+                oscuro: document.getElementById("oscuro").checked,
+                intenso: document.getElementById("intenso").checked,
+            };
+
+            try {
+                const response = await fetch(`${API}/personalidad/mi-personalidad`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error();
+
+                alert("✅ ¡Personalidad guardada correctamente!");
+
+            } catch (error) {
+                alert("❌ Error al guardar personalidad");
+            }
+        });
+
+        function cerrarSesion() {
+            localStorage.clear();
+            window.location.href = "/login.html";
+            return false;
+        }
+
+        cargarMiPersonalidad();
+    </script>
+</body>
+</html>

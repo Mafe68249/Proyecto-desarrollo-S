@@ -1,45 +1,119 @@
-<nav class="navbar">
-    <div class="navbar-container">
-        <a href="/" class="logo">🎬 K-Drama Hub</a>
-        <div class="nav-links" id="navLinks"></div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Drama Hub - Tu plataforma de K-Dramas</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="logo">🎬 K-Drama Hub</a>
+            <div class="nav-links" id="navLinks"></div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero">
+            <h1>🎬 Descubre tu próximo K-Drama</h1>
+            <p>Explora nuestro catálogo y encuentra dramas según tu personalidad</p>
+        </div>
+
+        <h2 class="section-title">📺 Todos los K-Dramas</h2>
+        <div class="kdrama-grid" id="kdramaGrid">
+            <div class="loading-card">Cargando K-Dramas...</div>
+        </div>
     </div>
-</nav>
 
-<script>
-    const token = localStorage.getItem("token");
-    const usuarioNombre = localStorage.getItem("usuario_nombre");
-    const usuarioRol = localStorage.getItem("usuario_rol");
-    const navLinks = document.getElementById("navLinks");
+    <script>
+        const API = window.location.origin;
+        const token = localStorage.getItem("token");
+        const usuarioNombre = localStorage.getItem("usuario_nombre");
+        const usuarioRol = localStorage.getItem("usuario_rol");
 
-    if (token) {
-        if (usuarioRol === "admin") {
-            navLinks.innerHTML = `
-                <a href="/">Inicio</a>
-                <a href="/admin.html">👑 Admin</a>
-                <a href="/mi-personalidad.html">❤️ Mi Personalidad</a>
-                <a href="/mis-recomendaciones.html">🎯 Recomendaciones</a>
-                <span style="color: #e50914;">👋 ${usuarioNombre}</span>
-                <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
-            `;
+        // Navegación dinámica
+        const navLinks = document.getElementById("navLinks");
+
+        if (token) {
+            if (usuarioRol === "admin") {
+                navLinks.innerHTML = `
+                    <a href="/">Inicio</a>
+                    <a href="/admin.html">👑 Admin</a>
+                    <a href="/mi-personalidad.html">❤️ Mi Personalidad</a>
+                    <a href="/mis-recomendaciones.html">🎯 Recomendaciones</a>
+                    <span class="user-name">👋 ${usuarioNombre}</span>
+                    <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
+                `;
+            } else {
+                navLinks.innerHTML = `
+                    <a href="/">Inicio</a>
+                    <a href="/mi-personalidad.html">❤️ Mi Personalidad</a>
+                    <a href="/mis-recomendaciones.html">🎯 Recomendaciones</a>
+                    <span class="user-name">👋 ${usuarioNombre}</span>
+                    <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
+                `;
+            }
         } else {
             navLinks.innerHTML = `
                 <a href="/">Inicio</a>
-                <a href="/mi-personalidad.html">❤️ Mi Personalidad</a>
-                <a href="/mis-recomendaciones.html">🎯 Recomendaciones</a>
-                <span style="color: #e50914;">👋 ${usuarioNombre}</span>
-                <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
+                <a href="/login.html">🔐 Iniciar Sesión</a>
+                <a href="/registro.html">📝 Registro</a>
             `;
         }
-    } else {
-        navLinks.innerHTML = `
-            <a href="/">Inicio</a>
-            <a href="/login.html">🔐 Iniciar Sesión</a>
-        `;
-    }
 
-    function cerrarSesion() {
-        localStorage.clear();
-        window.location.href = "/";
-        return false;
-    }
-</script>
+        function cerrarSesion() {
+            localStorage.clear();
+            window.location.href = "/";
+            return false;
+        }
+
+        function getIconoPorGenero(genero) {
+            const iconos = {
+                'romance': '💕', 'accion': '⚔️', 'comedia': '😂',
+                'terror': '😱', 'suspenso': '🔪', 'drama': '🎭',
+                'misterio': '🕵️', 'thriller': '🔫'
+            };
+            return iconos[genero?.toLowerCase()] || '🎬';
+        }
+
+        async function cargarKDramas() {
+            try {
+                const response = await fetch(API + "/kdramas");
+                const kdramas = await response.json();
+
+                const grid = document.getElementById("kdramaGrid");
+
+                if (!kdramas || kdramas.length === 0) {
+                    grid.innerHTML = '<div class="empty-message">📺 No hay K-Dramas aún. (Solo admin puede agregar)</div>';
+                    return;
+                }
+
+                grid.innerHTML = kdramas.map(kd => `
+                    <div class="kdrama-card">
+                        <div class="kdrama-image">
+                            ${kd.imagen_base64 ?
+                                `<img src="${kd.imagen_base64}" alt="${kd.nombre}">` :
+                                `<div class="no-image">${getIconoPorGenero(kd.genero)}</div>`}
+                        </div>
+                        <div class="kdrama-info">
+                            <div class="kdrama-title">${kd.nombre}</div>
+                            <div class="kdrama-genre">${kd.genero}</div>
+                            <div class="kdrama-emotional">💖 Nivel emocional: ${kd.nivel_emocional}/10</div>
+                            <div class="emotional-bar">
+                                <div class="emotional-fill" style="width: ${(kd.nivel_emocional / 10) * 100}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById("kdramaGrid").innerHTML = '<div class="error-message">❌ Error al cargar los K-Dramas</div>';
+            }
+        }
+
+        cargarKDramas();
+    </script>
+</body>
+</html>

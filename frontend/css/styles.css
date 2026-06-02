@@ -1,4 +1,4 @@
-/* ========== ESTILO PASTEL - SUAVE Y MODERNO ========== */
+/* ========== ESTILO PASTEL - K-DRAMA HUB ========== */
 
 * {
     margin: 0;
@@ -13,16 +13,16 @@ body {
     min-height: 100vh;
 }
 
-/* ========== BARRA DE NAVEGACIÓN PASTEL ========== */
+/* ========== BARRA DE NAVEGACIÓN ========== */
 .navbar {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(245, 240, 255, 0.95) 100%);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
     padding: 1rem 2rem;
     position: sticky;
     top: 0;
     z-index: 1000;
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(200, 180, 240, 0.3);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgba(200, 132, 252, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
 }
 
 .navbar-container {
@@ -35,11 +35,10 @@ body {
     gap: 1rem;
 }
 
-/* LOGO */
 .logo {
     font-size: 1.8rem;
     font-weight: bold;
-    background: linear-gradient(135deg, #c084fc, #a855f7, #c084fc);
+    background: linear-gradient(135deg, #c084fc, #a855f7);
     background-size: 200% 200%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -52,18 +51,18 @@ body {
     transform: scale(1.05);
 }
 
-/* ENLACES DE NAVEGACIÓN */
 .nav-links {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .nav-links a {
     color: #6b6b8a;
     text-decoration: none;
-    padding: 0.6rem 1.2rem;
-    border-radius: 25px;
+    padding: 0.5rem 1.2rem;
+    border-radius: 30px;
     transition: all 0.3s ease;
     font-weight: 500;
 }
@@ -77,7 +76,13 @@ body {
 .nav-links a.active {
     background: linear-gradient(135deg, #c084fc, #a855f7);
     color: white;
-    box-shadow: 0 4px 15px rgba(160, 120, 240, 0.3);
+    box-shadow: 0 4px 12px rgba(160, 120, 240, 0.3);
+}
+
+.user-name {
+    color: #c084fc;
+    font-weight: 500;
+    margin-left: 0.5rem;
 }
 
 /* ========== CONTENEDOR PRINCIPAL ========== */
@@ -85,10 +90,10 @@ body {
     max-width: 1400px;
     margin: 0 auto;
     padding: 2rem;
-    animation: fadeInUp 0.5s ease;
+    animation: fadeIn 0.5s ease;
 }
 
-@keyframes fadeInUp {
+@keyframes fadeIn {
     from {
         opacity: 0;
         transform: translateY(20px);
@@ -110,7 +115,10 @@ body {
 
 .hero h1 {
     font-size: 2.5rem;
-    color: #7c3aed;
+    background: linear-gradient(135deg, #7c3aed, #c084fc);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
     margin-bottom: 1rem;
 }
 
@@ -119,7 +127,7 @@ body {
     color: #8b8baa;
 }
 
-/* ========== TARJETAS DE K-DRAMAS (ESTILO PASTEL) ========== */
+/* ========== TÍTULOS ========== */
 .section-title {
     font-size: 1.8rem;
     margin-bottom: 2rem;
@@ -128,6 +136,7 @@ body {
     padding-left: 1rem;
 }
 
+/* ========== TARJETAS DE K-DRAMAS ========== */
 .kdrama-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -141,13 +150,13 @@ body {
     transition: all 0.3s ease;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(200, 132, 252, 0.2);
+    border: 1px solid rgba(200, 132, 252, 0.15);
 }
 
 .kdrama-card:hover {
     transform: translateY(-8px);
-    box-shadow: 0 15px 35px rgba(160, 120, 240, 0.2);
-    border-color: rgba(200, 132, 252, 0.5);
+    box-shadow: 0 15px 35px rgba(160, 120, 240, 0.15);
+    border-color: rgba(200, 132, 252, 0.3);
 }
 
 .kdrama-image {
@@ -171,9 +180,17 @@ body {
     transform: scale(1.05);
 }
 
+.no-image {
+    font-size: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
 .kdrama-info {
     padding: 1.2rem;
-    background: white;
 }
 
 .kdrama-title {
@@ -189,7 +206,8 @@ body {
     color: #7c3aed;
     padding: 0.2rem 0.8rem;
     border-radius: 20px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+    font-weight: 500;
     margin-bottom: 0.5rem;
 }
 
@@ -218,15 +236,11 @@ body {
 /* ========== TARJETAS PARA FORMULARIOS ========== */
 .card {
     background: white;
-    border-radius: 20px;
+    border-radius: 24px;
     padding: 2rem;
     margin-bottom: 2rem;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(200, 132, 252, 0.2);
-}
-
-.card:hover {
-    box-shadow: 0 8px 25px rgba(160, 120, 240, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(200, 132, 252, 0.15);
 }
 
 .card h2 {
@@ -261,7 +275,7 @@ body {
     padding: 0.8rem 1rem;
     background: #f9f8ff;
     border: 2px solid #e8daff;
-    border-radius: 12px;
+    border-radius: 16px;
     color: #4a4a6a;
     font-size: 1rem;
     transition: all 0.3s ease;
@@ -275,6 +289,7 @@ body {
     background: white;
 }
 
+/* ========== CHECKBOXES ========== */
 .checks {
     display: flex;
     flex-wrap: wrap;
@@ -289,12 +304,13 @@ body {
     cursor: pointer;
     padding: 0.5rem 1rem;
     background: #f9f8ff;
-    border-radius: 25px;
+    border-radius: 30px;
     transition: all 0.3s ease;
 }
 
 .checks label:hover {
     background: #f0e8ff;
+    transform: translateY(-2px);
 }
 
 .checks input[type="checkbox"] {
@@ -304,16 +320,16 @@ body {
     accent-color: #c084fc;
 }
 
-/* ========== BOTONES PASTEL ========== */
+/* ========== BOTONES ========== */
 .btn {
     background: linear-gradient(135deg, #c084fc, #a855f7);
     color: white;
     border: none;
     padding: 0.8rem 2rem;
-    border-radius: 30px;
+    border-radius: 40px;
     cursor: pointer;
     font-size: 1rem;
-    font-weight: bold;
+    font-weight: 600;
     transition: all 0.3s ease;
 }
 
@@ -321,10 +337,6 @@ body {
     background: linear-gradient(135deg, #a855f7, #9333ea);
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(160, 120, 240, 0.4);
-}
-
-.btn:active {
-    transform: translateY(1px);
 }
 
 .btn-outline {
@@ -346,19 +358,19 @@ body {
     display: block;
 }
 
-.tabla thead {
+.tabla thead tr {
     background: linear-gradient(135deg, #f0e8ff, #e8daff);
+    border-radius: 16px;
 }
 
 .tabla th {
     color: #7c3aed;
-    font-weight: bold;
+    font-weight: 600;
+    padding: 1rem;
 }
 
-.tabla th,
 .tabla td {
     padding: 1rem;
-    text-align: left;
     border-bottom: 1px solid #e8daff;
 }
 
@@ -366,24 +378,74 @@ body {
     background: #f9f8ff;
 }
 
-/* ========== SCROLLBAR PERSONALIZADA ========== */
-::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+/* ========== MENSAJES ========== */
+.loading-card,
+.empty-message,
+.error-message {
+    text-align: center;
+    grid-column: 1/-1;
+    padding: 3rem;
+    color: #8b8baa;
+    font-size: 1.1rem;
 }
 
-::-webkit-scrollbar-track {
-    background: #f0e8ff;
-    border-radius: 10px;
+.error-message {
+    color: #e50914;
 }
 
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #c084fc, #a855f7);
-    border-radius: 10px;
+/* ========== LOGIN/REGISTRO ========== */
+.login-container,
+.register-container {
+    max-width: 450px;
+    margin: 80px auto;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: #a855f7;
+.login-card,
+.register-card {
+    background: white;
+    border-radius: 30px;
+    padding: 2.5rem;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+.login-card h1,
+.register-card h1 {
+    color: #7c3aed;
+    margin-bottom: 1.5rem;
+}
+
+.message {
+    margin-top: 1rem;
+    padding: 0.8rem;
+    border-radius: 16px;
+    display: none;
+}
+
+.message.error {
+    background: rgba(229, 9, 20, 0.1);
+    color: #e50914;
+    display: block;
+}
+
+.message.success {
+    background: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+    display: block;
+}
+
+.link {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.link a {
+    color: #c084fc;
+    text-decoration: none;
+}
+
+.link a:hover {
+    text-decoration: underline;
 }
 
 /* ========== RESPONSIVE ========== */
@@ -399,12 +461,6 @@ body {
 
     .nav-links {
         justify-content: center;
-        gap: 0.3rem;
-    }
-
-    .nav-links a {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.9rem;
     }
 
     .logo {
@@ -416,55 +472,48 @@ body {
         gap: 1rem;
     }
 
-    .container {
-        padding: 1rem;
+    .kdrama-image {
+        height: 250px;
     }
 
-    .card {
+    .container {
         padding: 1rem;
     }
 
     .hero h1 {
         font-size: 1.8rem;
     }
+
+    .card {
+        padding: 1.5rem;
+    }
+
+    .checks {
+        gap: 0.5rem;
+    }
+
+    .checks label {
+        padding: 0.3rem 0.8rem;
+        font-size: 0.8rem;
+    }
 }
 
-/* ========== ANIMACIONES ========== */
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
+/* ========== SCROLLBAR ========== */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
 }
 
-.loading {
-    animation: pulse 1.5s infinite;
+::-webkit-scrollbar-track {
+    background: #f0e8ff;
+    border-radius: 10px;
 }
 
-/* ========== ESTADÍSTICAS ========== */
-.stats {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    margin-top: 2rem;
-    flex-wrap: wrap;
-}
-
-.stat-card {
-    background: white;
-    padding: 1rem 2rem;
-    border-radius: 20px;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-}
-
-.stat-number {
-    font-size: 2rem;
-    font-weight: bold;
+::-webkit-scrollbar-thumb {
     background: linear-gradient(135deg, #c084fc, #a855f7);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    border-radius: 10px;
 }
 
-.stat-label {
-    color: #8b8baa;
+::-webkit-scrollbar-thumb:hover {
+    background: #a855f7;
 }
