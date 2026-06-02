@@ -36,7 +36,7 @@ SQLModel.metadata.create_all(engine)
 # Esto es lo único que agregas - tus endpoints quedan igual
 app.mount("/css", StaticFiles(directory="frontend/css"), name="css")
 app.mount("/js", StaticFiles(directory="frontend/js"), name="js")
-app.mount("/img", StaticFiles(directory="frontend/img"), name="img")
+#app.mount("/img", StaticFiles(directory="frontend/img"), name="img")
 
 # Ruta principal - sirve index.html
 @app.get("/")
