@@ -14,57 +14,146 @@
     </nav>
 
     <div class="container">
-        <div class="hero" style="text-align: center; padding: 2rem;">
+        <div class="hero">
             <h1>👑 Panel de Administración</h1>
-            <p>Bienvenido, <span id="usuarioNombre"></span></p>
+            <p>Gestiona usuarios, K-Dramas y personalidades</p>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
-            <a href="/usuarios.html" class="kdrama-card" style="text-decoration: none; text-align: center; padding: 2rem;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">👥</div>
-                <h3>Gestión de Usuarios</h3>
-                <p style="color: #aaa;">Crear, editar y eliminar usuarios</p>
-            </a>
-
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
             <a href="/kdramas.html" class="kdrama-card" style="text-decoration: none; text-align: center; padding: 2rem;">
                 <div style="font-size: 3rem; margin-bottom: 1rem;">🎬</div>
                 <h3>Gestión de K-Dramas</h3>
-                <p style="color: #aaa;">Agregar y administrar catálogo</p>
+                <p style="color: #8b8baa;">Agregar, editar o eliminar K-Dramas</p>
             </a>
 
-            <a href="/personalidad.html" class="kdrama-card" style="text-decoration: none; text-align: center; padding: 2rem;">
+            <div class="kdrama-card" style="text-align: center; padding: 2rem; cursor: pointer;" onclick="abrirGestionUsuarios()">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">👥</div>
+                <h3>Gestión de Usuarios</h3>
+                <p style="color: #8b8baa;">Ver todos los usuarios del sistema</p>
+            </div>
+
+            <div class="kdrama-card" style="text-align: center; padding: 2rem; cursor: pointer;" onclick="abrirGestionPersonalidad()">
                 <div style="font-size: 3rem; margin-bottom: 1rem;">❤️</div>
-                <h3>Personalidad</h3>
-                <p style="color: #aaa;">Asignar rasgos a usuarios</p>
-            </a>
+                <h3>Gestión de Personalidad</h3>
+                <p style="color: #8b8baa;">Ver personalidades de usuarios</p>
+            </div>
+        </div>
+
+        <!-- Modal de Usuarios -->
+        <div id="modalUsuarios" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; overflow: auto;">
+            <div style="background: white; margin: 50px auto; max-width: 800px; border-radius: 20px; padding: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2>👥 Usuarios</h2>
+                    <button onclick="cerrarModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">✖️</button>
+                </div>
+                <div id="listaUsuarios" style="max-height: 500px; overflow-y: auto;"></div>
+            </div>
+        </div>
+
+        <!-- Modal de Personalidades -->
+        <div id="modalPersonalidad" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; overflow: auto;">
+            <div style="background: white; margin: 50px auto; max-width: 800px; border-radius: 20px; padding: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2>❤️ Personalidades</h2>
+                    <button onclick="cerrarModalPersonalidad()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">✖️</button>
+                </div>
+                <div id="listaPersonalidades" style="max-height: 500px; overflow-y: auto;"></div>
+            </div>
         </div>
     </div>
 
     <script>
+        const API = window.location.origin;
         const token = localStorage.getItem("token");
-        const usuarioRol = localStorage.getItem("usuario_rol");
         const usuarioNombre = localStorage.getItem("usuario_nombre");
+        const usuarioRol = localStorage.getItem("usuario_rol");
 
         if (!token || usuarioRol !== "admin") {
             window.location.href = "/login.html";
         }
 
-        document.getElementById("usuarioNombre").textContent = usuarioNombre || "Admin";
-
-        const navLinks = document.getElementById("navLinks");
-        navLinks.innerHTML = `
+        document.getElementById("navLinks").innerHTML = `
             <a href="/">Inicio</a>
             <a href="/admin.html" class="active">👑 Admin</a>
-            <a href="/mi-personalidad.html">❤️ Mi Personalidad</a>
-            <a href="/mis-recomendaciones.html">🎯 Mis Recomendaciones</a>
-            <span style="color: #e50914;">👋 ${usuarioNombre}</span>
+            <a href="/perfil.html">👤 Mi Perfil</a>
+            <span class="user-name">👋 ${usuarioNombre}</span>
             <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
         `;
 
         function cerrarSesion() {
             localStorage.clear();
-            window.location.href = "/login.html";
-            return false;
+            window.location.href = "/";
+        }
+
+        async function abrirGestionUsuarios() {
+            const modal = document.getElementById("modalUsuarios");
+            modal.style.display = "block";
+
+            try {
+                const response = await fetch(API + "/usuarios", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const usuarios = await response.json();
+
+                document.getElementById("listaUsuarios").innerHTML = `
+                    <table class="tabla">
+                        <thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Edad</th><th>Rol</th></tr></thead>
+                        <tbody>
+                            ${usuarios.map(u => `
+                                <tr><td>${u.id}</td><td>${u.nombre}</td><td>${u.email}</td><td>${u.edad}</td><td>${u.rol}</td></tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                document.getElementById("listaUsuarios").innerHTML = '<p>Error al cargar usuarios</p>';
+            }
+        }
+
+        async function abrirGestionPersonalidad() {
+            const modal = document.getElementById("modalPersonalidad");
+            modal.style.display = "block";
+
+            try {
+                const response = await fetch(API + "/personalidad", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const personalidades = await response.json();
+
+                if (personalidades.length === 0) {
+                    document.getElementById("listaPersonalidades").innerHTML = '<p>No hay personalidades registradas</p>';
+                    return;
+                }
+
+                document.getElementById("listaPersonalidades").innerHTML = `
+                    <table class="tabla">
+                        <thead><tr><th>ID Usuario</th><th>Romántico</th><th>Aventurero</th><th>Sensible</th><th>Extrovertido</th><th>Oscuro</th><th>Intenso</th></tr></thead>
+                        <tbody>
+                            ${personalidades.map(p => `
+                                <tr>
+                                    <td>${p.id_usuario}</td>
+                                    <td>${p.romantico ? '✅' : '❌'}</td>
+                                    <td>${p.aventurero ? '✅' : '❌'}</td>
+                                    <td>${p.sensible ? '✅' : '❌'}</td>
+                                    <td>${p.extrovertido ? '✅' : '❌'}</td>
+                                    <td>${p.oscuro ? '✅' : '❌'}</td>
+                                    <td>${p.intenso ? '✅' : '❌'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                document.getElementById("listaPersonalidades").innerHTML = '<p>Error al cargar personalidades</p>';
+            }
+        }
+
+        function cerrarModal() {
+            document.getElementById("modalUsuarios").style.display = "none";
+        }
+
+        function cerrarModalPersonalidad() {
+            document.getElementById("modalPersonalidad").style.display = "none";
         }
     </script>
 </body>

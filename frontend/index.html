@@ -40,16 +40,14 @@
                 navLinks.innerHTML = `
                     <a href="/">Inicio</a>
                     <a href="/admin.html">👑 Admin</a>
-                    <a href="/mi-personalidad.html">❤️ Mi Personalidad</a>
-                    <a href="/mis-recomendaciones.html">🎯 Recomendaciones</a>
+                    <a href="/perfil.html">👤 Mi Perfil</a>
                     <span class="user-name">👋 ${usuarioNombre}</span>
                     <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
                 `;
             } else {
                 navLinks.innerHTML = `
                     <a href="/">Inicio</a>
-                    <a href="/mi-personalidad.html">❤️ Mi Personalidad</a>
-                    <a href="/mis-recomendaciones.html">🎯 Recomendaciones</a>
+                    <a href="/perfil.html">👤 Mi Perfil</a>
                     <span class="user-name">👋 ${usuarioNombre}</span>
                     <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
                 `;
@@ -58,7 +56,6 @@
             navLinks.innerHTML = `
                 <a href="/">Inicio</a>
                 <a href="/login.html">🔐 Iniciar Sesión</a>
-                <a href="/registro.html">📝 Registro</a>
             `;
         }
 
@@ -85,7 +82,7 @@
                 const grid = document.getElementById("kdramaGrid");
 
                 if (!kdramas || kdramas.length === 0) {
-                    grid.innerHTML = '<div class="empty-message">📺 No hay K-Dramas aún. (Solo admin puede agregar)</div>';
+                    grid.innerHTML = '<div class="empty-message">📺 No hay K-Dramas aún.</div>';
                     return;
                 }
 

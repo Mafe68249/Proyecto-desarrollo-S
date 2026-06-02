@@ -2,38 +2,44 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Login - K-Drama Hub</title>
+    <title>Acceso - K-Drama Hub</title>
     <link rel="stylesheet" href="/css/styles.css">
     <style>
-        .login-container {
-            max-width: 400px;
-            margin: 100px auto;
+        .tab-container {
+            display: flex;
+            gap: 0;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e8daff;
         }
-        .login-card {
-            background: #1f1f2e;
-            border-radius: 12px;
-            padding: 2rem;
+        .tab {
+            flex: 1;
             text-align: center;
+            padding: 1rem;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #8b8baa;
+            transition: all 0.3s ease;
         }
-        .login-card h1 {
-            color: #e50914;
-            margin-bottom: 1.5rem;
+        .tab.active {
+            color: #7c3aed;
+            border-bottom: 3px solid #c084fc;
         }
-        .message {
-            margin-top: 1rem;
-            padding: 0.5rem;
-            border-radius: 5px;
+        .tab:hover {
+            color: #c084fc;
+        }
+        .form-panel {
             display: none;
         }
-        .message.error {
-            background: rgba(229,9,20,0.2);
-            color: #e50914;
+        .form-panel.active {
             display: block;
+            animation: fadeIn 0.3s ease;
         }
-        .message.success {
-            background: rgba(76,175,80,0.2);
-            color: #4caf50;
-            display: block;
+        .access-container {
+            max-width: 450px;
+            margin: 60px auto;
         }
     </style>
 </head>
@@ -43,50 +49,88 @@
             <a href="/" class="logo">🎬 K-Drama Hub</a>
             <div class="nav-links">
                 <a href="/">Inicio</a>
-                <a href="/login.html" class="active">🔐 Iniciar Sesión</a>
+                <a href="/login.html" class="active">🔐 Acceso</a>
             </div>
         </div>
     </nav>
 
-    <div class="login-container">
-        <div class="login-card">
-            <h1>🔐 Iniciar Sesión</h1>
-            <form id="loginForm">
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="email" required>
-                </div>
-                <div class="form-group">
-                    <label>Contraseña</label>
-                    <input type="password" id="password" required>
-                </div>
-                <button type="submit" class="btn">Ingresar</button>
-            </form>
-            <div id="message" class="message"></div>
+    <div class="access-container">
+        <div class="card" style="padding: 2rem;">
+            <div class="tab-container">
+                <button class="tab active" onclick="mostrarPanel('login')">Iniciar Sesión</button>
+                <button class="tab" onclick="mostrarPanel('registro')">Crear Cuenta</button>
+            </div>
+
+            <!-- Panel Login -->
+            <div id="loginPanel" class="form-panel active">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="login_email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña</label>
+                        <input type="password" id="login_password" required>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%;">Ingresar</button>
+                </form>
+                <div id="loginMessage" class="message"></div>
+            </div>
+
+            <!-- Panel Registro -->
+            <div id="registroPanel" class="form-panel">
+                <form id="registroForm">
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" id="reg_nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Edad</label>
+                        <input type="number" id="reg_edad" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="reg_email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña</label>
+                        <input type="password" id="reg_password" required>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%;">Registrarse</button>
+                </form>
+                <div id="registroMessage" class="message"></div>
+            </div>
         </div>
     </div>
 
     <script>
         const API = window.location.origin;
 
-        // Si ya está logueado, redirigir
+        // Verificar si ya está logueado
         if (localStorage.getItem("token")) {
             const rol = localStorage.getItem("usuario_rol");
-            if (rol === "admin") {
-                window.location.href = "/admin.html";
+            window.location.href = rol === "admin" ? "/admin.html" : "/";
+        }
+
+        function mostrarPanel(panel) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.form-panel').forEach(panel => panel.classList.remove('active'));
+
+            if (panel === 'login') {
+                document.querySelector('.tab:first-child').classList.add('active');
+                document.getElementById('loginPanel').classList.add('active');
             } else {
-                window.location.href = "/";
+                document.querySelector('.tab:last-child').classList.add('active');
+                document.getElementById('registroPanel').classList.add('active');
             }
         }
 
-        const form = document.getElementById("loginForm");
-        const messageDiv = document.getElementById("message");
-
-        form.addEventListener("submit", async (e) => {
+        // Login
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
             e.preventDefault();
-
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
+            const email = document.getElementById("login_email").value;
+            const password = document.getElementById("login_password").value;
+            const messageDiv = document.getElementById("loginMessage");
 
             try {
                 const response = await fetch(`${API}/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`, {
@@ -106,15 +150,46 @@
                 localStorage.setItem("usuario_rol", data.rol);
 
                 messageDiv.className = "message success";
-                messageDiv.textContent = "✅ Inicio de sesión exitoso! Redirigiendo...";
+                messageDiv.textContent = "✅ Inicio exitoso! Redirigiendo...";
 
                 setTimeout(() => {
-                    if (data.rol === "admin") {
-                        window.location.href = "/admin.html";
-                    } else {
-                        window.location.href = "/";
-                    }
+                    window.location.href = data.rol === "admin" ? "/admin.html" : "/";
                 }, 1500);
+
+            } catch (error) {
+                messageDiv.className = "message error";
+                messageDiv.textContent = error.message;
+            }
+        });
+
+        // Registro
+        document.getElementById("registroForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const nombre = document.getElementById("reg_nombre").value;
+            const edad = document.getElementById("reg_edad").value;
+            const email = document.getElementById("reg_email").value;
+            const password = document.getElementById("reg_password").value;
+            const messageDiv = document.getElementById("registroMessage");
+
+            try {
+                const response = await fetch(`${API}/registro?nombre=${encodeURIComponent(nombre)}&edad=${edad}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`, {
+                    method: "POST"
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || "Error al registrar");
+                }
+
+                messageDiv.className = "message success";
+                messageDiv.textContent = "✅ Registro exitoso! Ahora inicia sesión.";
+
+                setTimeout(() => {
+                    mostrarPanel('login');
+                    document.getElementById("login_email").value = email;
+                    document.getElementById("login_password").value = "";
+                }, 2000);
 
             } catch (error) {
                 messageDiv.className = "message error";

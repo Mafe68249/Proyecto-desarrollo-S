@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Perfil - K-Drama Hub</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .perfil-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e8daff;
+        }
+        .perfil-tab {
+            padding: 0.8rem 1.5rem;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #8b8baa;
+            transition: all 0.3s ease;
+        }
+        .perfil-tab.active {
+            color: #7c3aed;
+            border-bottom: 3px solid #c084fc;
+        }
+        .perfil-panel {
+            display: none;
+        }
+        .perfil-panel.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="logo">🎬 K-Drama Hub</a>
+            <div class="nav-links" id="navLinks"></div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero">
+            <h1>👤 Mi Perfil</h1>
+            <p id="bienvenida"></p>
+        </div>
+
+        <div class="card">
+            <div class="perfil-tabs">
+                <button class="perfil-tab active" onclick="mostrarPanel('personalidad')">❤️ Mi Personalidad</button>
+                <button class="perfil-tab" onclick="mostrarPanel('recomendaciones')">🎯 Mis Recomendaciones</button>
+            </div>
+
+            <!-- Panel Personalidad -->
+            <div id="personalidadPanel" class="perfil-panel active">
+                <form id="formPersonalidad">
+                    <div class="form-group">
+                        <label>¿Cómo te identificas?</label>
+                        <div class="checks">
+                            <label><input type="checkbox" id="romantico"> 💕 Romántico</label>
+                            <label><input type="checkbox" id="aventurero"> ⚔️ Aventurero</label>
+                            <label><input type="checkbox" id="sensible"> 🌸 Sensible</label>
+                            <label><input type="checkbox" id="extrovertido"> 🎉 Extrovertido</label>
+                            <label><input type="checkbox" id="oscuro"> 🌑 Oscuro</label>
+                            <label><input type="checkbox" id="intenso"> 🔥 Intenso</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Guardar mi Personalidad</button>
+                </form>
+                <div id="personalidadMessage" class="message" style="margin-top: 1rem;"></div>
+            </div>
+
+            <!-- Panel Recomendaciones -->
+            <div id="recomendacionesPanel" class="perfil-panel">
+                <div id="recomendacionesContent">
+                    <p style="color: #aaa;">Completa tu personalidad para ver recomendaciones</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = window.location.origin;
+        const token = localStorage.getItem("token");
+        const usuarioNombre = localStorage.getItem("usuario_nombre");
+        const usuarioRol = localStorage.getItem("usuario_rol");
+
+        if (!token) {
+            window.location.href = "/login.html";
+        }
+
+        // Navegación
+        const navLinks = document.getElementById("navLinks");
+        if (usuarioRol === "admin") {
+            navLinks.innerHTML = `
+                <a href="/">Inicio</a>
+                <a href="/admin.html">👑 Admin</a>
+                <a href="/perfil.html" class="active">👤 Mi Perfil</a>
+                <span class="user-name">👋 ${usuarioNombre}</span>
+                <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
+            `;
+        } else {
+            navLinks.innerHTML = `
+                <a href="/">Inicio</a>
+                <a href="/perfil.html" class="active">👤 Mi Perfil</a>
+                <span class="user-name">👋 ${usuarioNombre}</span>
+                <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
+            `;
+        }
+
+        document.getElementById("bienvenida").innerHTML = `Hola, ${usuarioNombre}! Configura tu personalidad para obtener recomendaciones.`;
+
+        function cerrarSesion() {
+            localStorage.clear();
+            window.location.href = "/";
+        }
+
+        function mostrarPanel(panel) {
+            document.querySelectorAll('.perfil-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.perfil-panel').forEach(p => p.classList.remove('active'));
+
+            if (panel === 'personalidad') {
+                document.querySelector('.perfil-tab:first-child').classList.add('active');
+                document.getElementById('personalidadPanel').classList.add('active');
+            } else {
+                document.querySelector('.perfil-tab:last-child').classList.add('active');
+                document.getElementById('recomendacionesPanel').classList.add('active');
+                cargarRecomendaciones();
+            }
+        }
+
+        // Cargar personalidad actual
+        async function cargarPersonalidad() {
+            try {
+                const response = await fetch(`${API}/personalidad/mi-personalidad`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (data.tiene) {
+                    const p = data.personalidad;
+                    document.getElementById("romantico").checked = p.romantico === true || p.romantico === "True";
+                    document.getElementById("aventurero").checked = p.aventurero === true || p.aventurero === "True";
+                    document.getElementById("sensible").checked = p.sensible === true || p.sensible === "True";
+                    document.getElementById("extrovertido").checked = p.extrovertido === true || p.extrovertido === "True";
+                    document.getElementById("oscuro").checked = p.oscuro === true || p.oscuro === "True";
+                    document.getElementById("intenso").checked = p.intenso === true || p.intenso === "True";
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        // Guardar personalidad
+        document.getElementById("formPersonalidad").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const data = {
+                romantico: document.getElementById("romantico").checked,
+                aventurero: document.getElementById("aventurero").checked,
+                sensible: document.getElementById("sensible").checked,
+                extrovertido: document.getElementById("extrovertido").checked,
+                oscuro: document.getElementById("oscuro").checked,
+                intenso: document.getElementById("intenso").checked,
+            };
+
+            const messageDiv = document.getElementById("personalidadMessage");
+
+            try {
+                const response = await fetch(`${API}/personalidad/mi-personalidad`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error();
+
+                messageDiv.className = "message success";
+                messageDiv.textContent = "✅ Personalidad guardada correctamente!";
+
+                setTimeout(() => {
+                    messageDiv.style.display = "none";
+                }, 3000);
+
+            } catch (error) {
+                messageDiv.className = "message error";
+                messageDiv.textContent = "❌ Error al guardar personalidad";
+            }
+        });
+
+        // Cargar recomendaciones
+        async function cargarRecomendaciones() {
+            const container = document.getElementById("recomendacionesContent");
+            container.innerHTML = '<p>Cargando recomendaciones...</p>';
+
+            try {
+                const response = await fetch(`${API}/recomendar/mis-recomendaciones`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (response.status === 404) {
+                    container.innerHTML = '<p>❌ No tienes personalidad registrada. Ve a "Mi Personalidad" para configurarla.</p>';
+                    return;
+                }
+
+                if (!response.ok) throw new Error();
+
+                const data = await response.json();
+
+                if (data.total === 0) {
+                    container.innerHTML = '<p>😢 No hay K-Dramas que coincidan con tu personalidad aún.</p>';
+                    return;
+                }
+
+                container.innerHTML = `
+                    <p style="margin-bottom: 1rem;">🎯 Encontramos ${data.total} K-Dramas para ti:</p>
+                    <div class="kdrama-grid">
+                        ${data.recomendaciones.map(kd => `
+                            <div class="kdrama-card">
+                                <div class="kdrama-image">
+                                    ${kd.imagen_base64 ?
+                                        `<img src="${kd.imagen_base64}" alt="${kd.nombre}">` :
+                                        `<div class="no-image">🎬</div>`}
+                                </div>
+                                <div class="kdrama-info">
+                                    <div class="kdrama-title">${kd.nombre}</div>
+                                    <div class="kdrama-genre">${kd.genero}</div>
+                                    <div class="kdrama-emotional">💖 Nivel emocional: ${kd.nivel_emocional}/10</div>
+                                    <div class="emotional-bar">
+                                        <div class="emotional-fill" style="width: ${(kd.nivel_emocional / 10) * 100}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+            } catch (error) {
+                container.innerHTML = '<p>❌ Error al cargar recomendaciones</p>';
+            }
+        }
+
+        cargarPersonalidad();
+
+        function getIconoPorGenero(genero) {
+            const iconos = {
+                'romance': '💕', 'accion': '⚔️', 'comedia': '😂',
+                'terror': '😱', 'suspenso': '🔪', 'drama': '🎭'
+            };
+            return iconos[genero?.toLowerCase()] || '🎬';
+        }
+    </script>
+</body>
+</html>
