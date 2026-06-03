@@ -5,42 +5,21 @@
     <title>Acceso - K-Drama Hub</title>
     <link rel="stylesheet" href="/css/styles.css">
     <style>
-        .tab-container {
-            display: flex;
-            gap: 0;
-            margin-bottom: 2rem;
-            border-bottom: 2px solid #e8daff;
-        }
-        .tab {
-            flex: 1;
-            text-align: center;
-            padding: 1rem;
-            cursor: pointer;
-            background: transparent;
-            border: none;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #8b8baa;
-            transition: all 0.3s ease;
-        }
-        .tab.active {
-            color: #7c3aed;
-            border-bottom: 3px solid #c084fc;
-        }
-        .tab:hover {
-            color: #c084fc;
-        }
-        .form-panel {
-            display: none;
-        }
-        .form-panel.active {
-            display: block;
-            animation: fadeIn 0.3s ease;
-        }
-        .access-container {
-            max-width: 450px;
-            margin: 60px auto;
-        }
+        .tab-container { display:flex; gap:0; margin-bottom:2rem; border-bottom:2px solid #e8daff; }
+        .tab { flex:1; text-align:center; padding:1rem; cursor:pointer; background:transparent; border:none; font-size:1.1rem; font-weight:600; color:#8b8baa; transition:all 0.3s ease; }
+        .tab.active { color:#7c3aed; border-bottom:3px solid #c084fc; }
+        .tab:hover { color:#c084fc; }
+        .form-panel { display:none; }
+        .form-panel.active { display:block; animation:fadeIn 0.3s ease; }
+        .access-container { max-width:450px; margin:60px auto; }
+        .field-error { font-size:0.78rem; color:#e50914; margin-top:0.3rem; display:none; }
+        .form-group input.invalid { border-color:#e50914; }
+        .form-group input.valid { border-color:#4caf50; }
+        .password-wrapper { position:relative; }
+        .password-wrapper input { padding-right:3rem; }
+        .toggle-pw { position:absolute; right:1rem; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:1.1rem; color:#8b8baa; }
+        .strength-bar { height:4px; border-radius:4px; margin-top:0.4rem; transition:all 0.3s; background:#e8daff; }
+        .strength-text { font-size:0.75rem; margin-top:0.2rem; }
     </style>
 </head>
 <body>
@@ -49,13 +28,14 @@
             <a href="/" class="logo">🎬 K-Drama Hub</a>
             <div class="nav-links">
                 <a href="/">Inicio</a>
+                <a href="/estadisticas.html">📊 Stats</a>
                 <a href="/login.html" class="active">🔐 Acceso</a>
             </div>
         </div>
     </nav>
 
     <div class="access-container">
-        <div class="card" style="padding: 2rem;">
+        <div class="card" style="padding:2rem;">
             <div class="tab-container">
                 <button class="tab active" onclick="mostrarPanel('login')">Iniciar Sesión</button>
                 <button class="tab" onclick="mostrarPanel('registro')">Crear Cuenta</button>
@@ -63,40 +43,62 @@
 
             <!-- Panel Login -->
             <div id="loginPanel" class="form-panel active">
-                <form id="loginForm">
+                <form id="loginForm" novalidate>
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email" id="login_email" required>
+                        <input type="email" id="login_email" placeholder="tu@email.com" required>
+                        <span class="field-error" id="err_login_email">Ingresa un email válido.</span>
                     </div>
                     <div class="form-group">
                         <label>Contraseña</label>
-                        <input type="password" id="login_password" required>
+                        <div class="password-wrapper">
+                            <input type="password" id="login_password" placeholder="••••••" required>
+                            <button type="button" class="toggle-pw" onclick="togglePw('login_password', this)">👁️</button>
+                        </div>
+                        <span class="field-error" id="err_login_password">La contraseña no puede estar vacía.</span>
                     </div>
-                    <button type="submit" class="btn" style="width: 100%;">Ingresar</button>
+                    <button type="submit" class="btn" style="width:100%;">Ingresar</button>
                 </form>
                 <div id="loginMessage" class="message"></div>
             </div>
 
             <!-- Panel Registro -->
             <div id="registroPanel" class="form-panel">
-                <form id="registroForm">
+                <form id="registroForm" novalidate>
                     <div class="form-group">
-                        <label>Nombre</label>
-                        <input type="text" id="reg_nombre" required>
+                        <label>Nombre completo</label>
+                        <input type="text" id="reg_nombre" placeholder="Ej: María García" required minlength="2">
+                        <span class="field-error" id="err_reg_nombre">El nombre debe tener al menos 2 caracteres.</span>
                     </div>
                     <div class="form-group">
                         <label>Edad</label>
-                        <input type="number" id="reg_edad" required>
+                        <input type="number" id="reg_edad" placeholder="Ej: 22" min="1" max="120" required>
+                        <span class="field-error" id="err_reg_edad">La edad debe estar entre 1 y 120 años.</span>
                     </div>
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email" id="reg_email" required>
+                        <input type="email" id="reg_email" placeholder="tu@email.com" required>
+                        <span class="field-error" id="err_reg_email">Ingresa un email válido.</span>
                     </div>
                     <div class="form-group">
                         <label>Contraseña</label>
-                        <input type="password" id="reg_password" required>
+                        <div class="password-wrapper">
+                            <input type="password" id="reg_password" placeholder="Mínimo 4 caracteres" required minlength="4">
+                            <button type="button" class="toggle-pw" onclick="togglePw('reg_password', this)">👁️</button>
+                        </div>
+                        <div class="strength-bar" id="strengthBar"></div>
+                        <div class="strength-text" id="strengthText"></div>
+                        <span class="field-error" id="err_reg_password">La contraseña debe tener al menos 4 caracteres.</span>
                     </div>
-                    <button type="submit" class="btn" style="width: 100%;">Registrarse</button>
+                    <div class="form-group">
+                        <label>Confirmar contraseña</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="reg_password2" placeholder="Repite tu contraseña" required>
+                            <button type="button" class="toggle-pw" onclick="togglePw('reg_password2', this)">👁️</button>
+                        </div>
+                        <span class="field-error" id="err_reg_password2">Las contraseñas no coinciden.</span>
+                    </div>
+                    <button type="submit" class="btn" style="width:100%;">Registrarse</button>
                 </form>
                 <div id="registroMessage" class="message"></div>
             </div>
@@ -106,16 +108,14 @@
     <script>
         const API = window.location.origin;
 
-        // Verificar si ya está logueado
         if (localStorage.getItem("token")) {
             const rol = localStorage.getItem("usuario_rol");
             window.location.href = rol === "admin" ? "/admin.html" : "/";
         }
 
         function mostrarPanel(panel) {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.form-panel').forEach(panel => panel.classList.remove('active'));
-
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
             if (panel === 'login') {
                 document.querySelector('.tab:first-child').classList.add('active');
                 document.getElementById('loginPanel').classList.add('active');
@@ -125,75 +125,138 @@
             }
         }
 
+        function togglePw(id, btn) {
+            const input = document.getElementById(id);
+            input.type = input.type === 'password' ? 'text' : 'password';
+            btn.textContent = input.type === 'password' ? '👁️' : '🙈';
+        }
+
+        // Fuerza de contraseña
+        document.getElementById("reg_password").addEventListener("input", function() {
+            const val = this.value;
+            const bar = document.getElementById("strengthBar");
+            const txt = document.getElementById("strengthText");
+            if (!val) { bar.style.background = "#e8daff"; txt.textContent = ""; return; }
+            let score = 0;
+            if (val.length >= 4) score++;
+            if (val.length >= 8) score++;
+            if (/[A-Z]/.test(val)) score++;
+            if (/[0-9]/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+            const levels = [
+                {c:"#e50914", t:"Muy débil"},
+                {c:"#ff9800", t:"Débil"},
+                {c:"#ffc107", t:"Regular"},
+                {c:"#4caf50", t:"Buena"},
+                {c:"#2196f3", t:"Muy fuerte"}
+            ];
+            const l = levels[Math.min(score-1, 4)] || levels[0];
+            bar.style.background = `linear-gradient(90deg, ${l.c} ${score*20}%, #e8daff ${score*20}%)`;
+            txt.textContent = l.t;
+            txt.style.color = l.c;
+        });
+
+        // Helpers de validación
+        function setError(id, show) {
+            const errEl = document.getElementById("err_" + id);
+            const input = document.getElementById(id);
+            if (errEl) errEl.style.display = show ? "block" : "none";
+            if (input) { input.classList.toggle("invalid", show); input.classList.toggle("valid", !show && input.value !== ""); }
+            return !show;
+        }
+
+        function validarEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
+
+        // Validación en tiempo real
+        document.getElementById("login_email").addEventListener("blur", function() {
+            setError("login_email", !validarEmail(this.value));
+        });
+        document.getElementById("login_password").addEventListener("blur", function() {
+            setError("login_password", this.value.trim() === "");
+        });
+        document.getElementById("reg_nombre").addEventListener("blur", function() {
+            setError("reg_nombre", this.value.trim().length < 2);
+        });
+        document.getElementById("reg_edad").addEventListener("blur", function() {
+            const v = parseInt(this.value);
+            setError("reg_edad", isNaN(v) || v < 1 || v > 120);
+        });
+        document.getElementById("reg_email").addEventListener("blur", function() {
+            setError("reg_email", !validarEmail(this.value));
+        });
+        document.getElementById("reg_password").addEventListener("blur", function() {
+            setError("reg_password", this.value.length < 4);
+        });
+        document.getElementById("reg_password2").addEventListener("blur", function() {
+            setError("reg_password2", this.value !== document.getElementById("reg_password").value);
+        });
+
         // Login
         document.getElementById("loginForm").addEventListener("submit", async (e) => {
             e.preventDefault();
-            const email = document.getElementById("login_email").value;
+            const email = document.getElementById("login_email").value.trim();
             const password = document.getElementById("login_password").value;
             const messageDiv = document.getElementById("loginMessage");
 
-            try {
-                const response = await fetch(`${API}/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`, {
-                    method: "POST"
-                });
+            let ok = true;
+            if (!validarEmail(email)) ok = setError("login_email", true) && ok;
+            if (!password) ok = setError("login_password", true) && ok;
+            if (!ok) return;
 
+            try {
+                const response = await fetch(`${API}/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`, { method: "POST" });
                 if (!response.ok) {
                     const error = await response.json();
                     throw new Error(error.detail || "Error al iniciar sesión");
                 }
-
                 const data = await response.json();
-
                 localStorage.setItem("token", data.access_token);
                 localStorage.setItem("usuario_id", data.usuario_id);
                 localStorage.setItem("usuario_nombre", data.nombre);
                 localStorage.setItem("usuario_rol", data.rol);
-
                 messageDiv.className = "message success";
                 messageDiv.textContent = "✅ Inicio exitoso! Redirigiendo...";
-
-                setTimeout(() => {
-                    window.location.href = data.rol === "admin" ? "/admin.html" : "/";
-                }, 1500);
-
+                setTimeout(() => { window.location.href = data.rol === "admin" ? "/admin.html" : "/"; }, 1200);
             } catch (error) {
                 messageDiv.className = "message error";
-                messageDiv.textContent = error.message;
+                messageDiv.textContent = "❌ " + error.message;
             }
         });
 
         // Registro
         document.getElementById("registroForm").addEventListener("submit", async (e) => {
             e.preventDefault();
-            const nombre = document.getElementById("reg_nombre").value;
-            const edad = document.getElementById("reg_edad").value;
-            const email = document.getElementById("reg_email").value;
+            const nombre = document.getElementById("reg_nombre").value.trim();
+            const edad = parseInt(document.getElementById("reg_edad").value);
+            const email = document.getElementById("reg_email").value.trim();
             const password = document.getElementById("reg_password").value;
+            const password2 = document.getElementById("reg_password2").value;
             const messageDiv = document.getElementById("registroMessage");
 
+            let ok = true;
+            if (nombre.length < 2) ok = setError("reg_nombre", true) && false;
+            if (isNaN(edad) || edad < 1 || edad > 120) ok = setError("reg_edad", true) && false;
+            if (!validarEmail(email)) ok = setError("reg_email", true) && false;
+            if (password.length < 4) ok = setError("reg_password", true) && false;
+            if (password !== password2) ok = setError("reg_password2", true) && false;
+            if (!ok) return;
+
             try {
-                const response = await fetch(`${API}/registro?nombre=${encodeURIComponent(nombre)}&edad=${edad}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`, {
-                    method: "POST"
-                });
-
+                const response = await fetch(
+                    `${API}/registro?nombre=${encodeURIComponent(nombre)}&edad=${edad}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
+                    { method: "POST" }
+                );
                 const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.detail || "Error al registrar");
-                }
-
+                if (!response.ok) throw new Error(data.detail || "Error al registrar");
                 messageDiv.className = "message success";
                 messageDiv.textContent = "✅ Registro exitoso! Ahora inicia sesión.";
-
                 setTimeout(() => {
                     mostrarPanel('login');
                     document.getElementById("login_email").value = email;
-                    document.getElementById("login_password").value = "";
-                }, 2000);
-
+                }, 1800);
             } catch (error) {
                 messageDiv.className = "message error";
-                messageDiv.textContent = error.message;
+                messageDiv.textContent = "❌ " + error.message;
             }
         });
     </script>

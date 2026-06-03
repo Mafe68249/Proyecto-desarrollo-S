@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estadísticas - K-Drama Hub</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2.5rem;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(200,132,252,0.2);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            transition: transform 0.3s;
+        }
+        .stat-card:hover { transform: translateY(-4px); }
+        .stat-icon { font-size: 2.2rem; margin-bottom: 0.5rem; }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #7c3aed, #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .stat-label { font-size: 0.85rem; color: #8b8baa; margin-top: 0.3rem; }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .chart-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid rgba(200,132,252,0.15);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        }
+        .chart-card h3 {
+            color: #7c3aed;
+            margin-bottom: 1.2rem;
+            font-size: 1.1rem;
+            border-left: 3px solid #c084fc;
+            padding-left: 0.8rem;
+        }
+        .chart-wrapper { position: relative; width: 100%; height: 280px; }
+        .top-list { list-style: none; padding: 0; }
+        .top-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #f0e8ff;
+        }
+        .top-list li:last-child { border-bottom: none; }
+        .top-rank {
+            background: linear-gradient(135deg,#c084fc,#a855f7);
+            color: white;
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem; font-weight: bold; flex-shrink: 0;
+        }
+        .top-name { flex: 1; font-weight: 500; color: #4a4a6a; }
+        .top-score {
+            font-size: 0.85rem;
+            background: #f0e8ff;
+            color: #7c3aed;
+            padding: 0.2rem 0.7rem;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .personalidad-bar-row {
+            display: flex; align-items: center; gap: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+        .p-label { width: 120px; font-size: 0.9rem; color: #6b6b8a; flex-shrink: 0; }
+        .p-bar-bg { flex: 1; height: 12px; background: #e8daff; border-radius: 10px; overflow: hidden; }
+        .p-bar-fill { height: 100%; background: linear-gradient(90deg,#c084fc,#a855f7); border-radius: 10px; transition: width 0.8s ease; }
+        .p-count { font-size: 0.85rem; color: #8b8baa; width: 30px; text-align: right; flex-shrink: 0; }
+        @media (max-width: 768px) {
+            .charts-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="logo">🎬 K-Drama Hub</a>
+            <div class="nav-links" id="navLinks"></div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero">
+            <h1>📊 Estadísticas</h1>
+            <p>Resumen general de la plataforma K-Drama Hub</p>
+        </div>
+
+        <!-- Tarjetas de resumen -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-number">—</div><div class="stat-label">Cargando...</div></div>
+        </div>
+
+        <!-- Gráficas -->
+        <div class="charts-grid">
+
+            <!-- Distribución por género -->
+            <div class="chart-card">
+                <h3>🎭 K-Dramas por Género</h3>
+                <div class="chart-wrapper">
+                    <canvas id="chartGenero" role="img" aria-label="Gráfica de dona mostrando distribución de K-Dramas por género">Sin datos aún.</canvas>
+                </div>
+            </div>
+
+            <!-- Nivel emocional promedio por género -->
+            <div class="chart-card">
+                <h3>💖 Nivel Emocional Promedio por Género</h3>
+                <div class="chart-wrapper">
+                    <canvas id="chartEmocional" role="img" aria-label="Gráfica de barras con nivel emocional promedio por género">Sin datos aún.</canvas>
+                </div>
+            </div>
+
+            <!-- Top K-Dramas por nivel emocional -->
+            <div class="chart-card">
+                <h3>🏆 Top 5 K-Dramas más intensos</h3>
+                <ul class="top-list" id="topKDramas">
+                    <li style="color:#8b8baa">Cargando...</li>
+                </ul>
+            </div>
+
+            <!-- Distribución de personalidades -->
+            <div class="chart-card">
+                <h3>❤️ Rasgos de Personalidad más comunes</h3>
+                <div id="personalidadBars" style="padding-top:0.5rem;">
+                    <p style="color:#8b8baa">Cargando...</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Gráfica de usuarios registrados por nivel emocional (histograma) -->
+        <div class="chart-card" style="margin-bottom:2rem;">
+            <h3>📈 Distribución de Niveles Emocionales</h3>
+            <div class="chart-wrapper" style="height:220px;">
+                <canvas id="chartHistograma" role="img" aria-label="Histograma de niveles emocionales de los K-Dramas">Sin datos aún.</canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API = window.location.origin;
+        const token = localStorage.getItem("token");
+        const usuarioNombre = localStorage.getItem("usuario_nombre");
+        const usuarioRol = localStorage.getItem("usuario_rol");
+
+        const navLinks = document.getElementById("navLinks");
+        if (token) {
+            const adminLink = usuarioRol === "admin" ? `<a href="/admin.html">👑 Admin</a>` : "";
+            navLinks.innerHTML = `
+                <a href="/">Inicio</a>
+                ${adminLink}
+                <a href="/estadisticas.html" class="active">📊 Stats</a>
+                <a href="/perfil.html">👤 Mi Perfil</a>
+                <span class="user-name">👋 ${usuarioNombre}</span>
+                <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
+            `;
+        } else {
+            navLinks.innerHTML = `
+                <a href="/">Inicio</a>
+                <a href="/estadisticas.html" class="active">📊 Stats</a>
+                <a href="/login.html">🔐 Iniciar Sesión</a>
+            `;
+        }
+
+        function cerrarSesion() { localStorage.clear(); window.location.href = "/"; }
+
+        const COLORES = ['#c084fc','#a855f7','#7c3aed','#6d28d9','#9333ea','#d8b4fe'];
+        const COLORES_BORDE = ['#a855f7','#9333ea','#6d28d9','#5b21b6','#7c3aed','#c084fc'];
+
+        async function cargarEstadisticas() {
+            const [kdramas, usuarios, personalidades] = await Promise.all([
+                fetch(API + "/kdramas").then(r => r.json()).catch(() => []),
+                fetch(API + "/usuarios").then(r => r.json()).catch(() => []),
+                fetch(API + "/personalidad").then(r => r.json()).catch(() => [])
+            ]);
+
+            // ---- TARJETAS RESUMEN ----
+            const nivelPromedio = kdramas.length
+                ? (kdramas.reduce((s,k) => s + k.nivel_emocional, 0) / kdramas.length).toFixed(1)
+                : "—";
+            const generos = [...new Set(kdramas.map(k => k.genero))];
+
+            document.getElementById("statsGrid").innerHTML = `
+                <div class="stat-card"><div class="stat-icon">📺</div><div class="stat-number">${kdramas.length}</div><div class="stat-label">K-Dramas registrados</div></div>
+                <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-number">${usuarios.length}</div><div class="stat-label">Usuarios registrados</div></div>
+                <div class="stat-card"><div class="stat-icon">❤️</div><div class="stat-number">${personalidades.length}</div><div class="stat-label">Personalidades creadas</div></div>
+                <div class="stat-card"><div class="stat-icon">🎭</div><div class="stat-number">${generos.length}</div><div class="stat-label">Géneros disponibles</div></div>
+                <div class="stat-card"><div class="stat-icon">💖</div><div class="stat-number">${nivelPromedio}</div><div class="stat-label">Nivel emocional prom.</div></div>
+            `;
+
+            // ---- GRÁFICA 1: Dona por género ----
+            const conteoGenero = {};
+            kdramas.forEach(k => { conteoGenero[k.genero] = (conteoGenero[k.genero] || 0) + 1; });
+            const generosLabels = Object.keys(conteoGenero);
+            const generosData = Object.values(conteoGenero);
+
+            if (generosLabels.length > 0) {
+                new Chart(document.getElementById("chartGenero"), {
+                    type: "doughnut",
+                    data: {
+                        labels: generosLabels,
+                        datasets: [{
+                            data: generosData,
+                            backgroundColor: COLORES.slice(0, generosLabels.length),
+                            borderColor: COLORES_BORDE.slice(0, generosLabels.length),
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: "bottom", labels: { padding: 12, font: { size: 12 } } }
+                        }
+                    }
+                });
+            }
+
+            // ---- GRÁFICA 2: Barras nivel emocional por género ----
+            const sumaEmocional = {};
+            const cuentaEmocional = {};
+            kdramas.forEach(k => {
+                sumaEmocional[k.genero] = (sumaEmocional[k.genero] || 0) + k.nivel_emocional;
+                cuentaEmocional[k.genero] = (cuentaEmocional[k.genero] || 0) + 1;
+            });
+            const promediosLabels = Object.keys(sumaEmocional);
+            const promediosData = promediosLabels.map(g => parseFloat((sumaEmocional[g]/cuentaEmocional[g]).toFixed(1)));
+
+            if (promediosLabels.length > 0) {
+                new Chart(document.getElementById("chartEmocional"), {
+                    type: "bar",
+                    data: {
+                        labels: promediosLabels,
+                        datasets: [{
+                            label: "Promedio",
+                            data: promediosData,
+                            backgroundColor: COLORES.slice(0, promediosLabels.length),
+                            borderColor: COLORES_BORDE.slice(0, promediosLabels.length),
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            y: { min: 0, max: 10, ticks: { stepSize: 2 }, grid: { color: "#f0e8ff" } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            }
+
+            // ---- TOP 5 más intensos ----
+            const top5 = [...kdramas].sort((a,b) => b.nivel_emocional - a.nivel_emocional).slice(0,5);
+            const iconos = { romance:'💕', accion:'⚔️', comedia:'😂', terror:'😱', suspenso:'🔪', drama:'🎭' };
+            document.getElementById("topKDramas").innerHTML = top5.length
+                ? top5.map((k,i) => `
+                    <li>
+                        <div class="top-rank">${i+1}</div>
+                        <span class="top-name">${iconos[k.genero]||'🎬'} ${k.nombre}</span>
+                        <span class="top-score">${k.nivel_emocional}/10</span>
+                    </li>`).join('')
+                : '<li style="color:#8b8baa">Sin datos</li>';
+
+            // ---- BARRAS DE PERSONALIDAD ----
+            const rasgos = ["romantico","aventurero","sensible","extrovertido","oscuro","intenso"];
+            const etiquetas = { romantico:"💕 Romántico", aventurero:"⚔️ Aventurero", sensible:"🌸 Sensible", extrovertido:"🎉 Extrovertido", oscuro:"🌑 Oscuro", intenso:"🔥 Intenso" };
+            const max = personalidades.length || 1;
+
+            if (personalidades.length > 0) {
+                document.getElementById("personalidadBars").innerHTML = rasgos.map(r => {
+                    const count = personalidades.filter(p => p[r] === true).length;
+                    const pct = Math.round((count/max)*100);
+                    return `
+                        <div class="personalidad-bar-row">
+                            <span class="p-label">${etiquetas[r]}</span>
+                            <div class="p-bar-bg"><div class="p-bar-fill" style="width:${pct}%"></div></div>
+                            <span class="p-count">${count}</span>
+                        </div>`;
+                }).join('');
+            } else {
+                document.getElementById("personalidadBars").innerHTML = '<p style="color:#8b8baa">Sin personalidades registradas aún.</p>';
+            }
+
+            // ---- HISTOGRAMA niveles 1-10 ----
+            const histograma = Array(10).fill(0);
+            kdramas.forEach(k => { if (k.nivel_emocional >= 1 && k.nivel_emocional <= 10) histograma[k.nivel_emocional-1]++; });
+
+            new Chart(document.getElementById("chartHistograma"), {
+                type: "bar",
+                data: {
+                    labels: ["1","2","3","4","5","6","7","8","9","10"],
+                    datasets: [{
+                        label: "Cantidad de K-Dramas",
+                        data: histograma,
+                        backgroundColor: histograma.map((_,i) => i >= 7 ? '#a855f7' : '#c084fc'),
+                        borderColor: '#9333ea',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: "#f0e8ff" } },
+                        x: { title: { display: true, text: "Nivel emocional" }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        cargarEstadisticas();
+    </script>
+</body>
+</html>

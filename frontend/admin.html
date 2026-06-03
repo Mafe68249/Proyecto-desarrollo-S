@@ -256,6 +256,7 @@
         document.getElementById("navLinks").innerHTML = `
             <a href="/">Inicio</a>
             <a href="/admin.html" class="active">👑 Admin</a>
+            <a href="/estadisticas.html">📊 Stats</a>
             <a href="/perfil.html">👤 Mi Perfil</a>
             <span class="user-name">👋 ${usuarioNombre}</span>
             <a href="#" onclick="cerrarSesion()">🚪 Salir</a>
@@ -268,6 +269,22 @@
 
         function cerrarModal(modalId) {
             document.getElementById(modalId).style.display = "none";
+        }
+
+        function mostrarError(msg) {
+            const div = document.createElement("div");
+            div.style.cssText = "position:fixed;top:80px;right:20px;background:#e50914;color:white;padding:0.8rem 1.5rem;border-radius:12px;z-index:9999;font-weight:500;box-shadow:0 4px 15px rgba(0,0,0,0.2)";
+            div.textContent = "❌ " + msg;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3500);
+        }
+
+        function mostrarExito(msg) {
+            const div = document.createElement("div");
+            div.style.cssText = "position:fixed;top:80px;right:20px;background:#4caf50;color:white;padding:0.8rem 1.5rem;border-radius:12px;z-index:9999;font-weight:500;box-shadow:0 4px 15px rgba(0,0,0,0.2)";
+            div.textContent = "✅ " + msg;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
         }
 
         // Convertir imagen a Base64
@@ -284,10 +301,16 @@
         document.getElementById("formKDrama").addEventListener("submit", async (e) => {
             e.preventDefault();
 
-            const nombre = document.getElementById("kdrama_nombre").value;
+            const nombre = document.getElementById("kdrama_nombre").value.trim();
             const genero = document.getElementById("kdrama_genero").value;
-            const nivel_emocional = parseInt(document.getElementById("kdrama_nivel").value);
+            const nivelRaw = document.getElementById("kdrama_nivel").value;
+            const nivel_emocional = parseInt(nivelRaw);
             const imagenFile = document.getElementById("kdrama_imagen").files[0];
+
+            // Validaciones
+            if (nombre.length < 2) { mostrarError("El nombre debe tener al menos 2 caracteres."); return; }
+            if (isNaN(nivel_emocional) || nivel_emocional < 1 || nivel_emocional > 10) { mostrarError("El nivel emocional debe ser entre 1 y 10."); return; }
+            if (imagenFile && imagenFile.size > 2 * 1024 * 1024) { mostrarError("La imagen no debe superar 2MB."); return; }
 
             let imagenBase64 = null;
             if (imagenFile) {
@@ -301,22 +324,20 @@
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${token}`
                     },
-                    body: JSON.stringify({
-                        nombre: nombre,
-                        genero: genero,
-                        nivel_emocional: nivel_emocional,
-                        imagen_base64: imagenBase64
-                    })
+                    body: JSON.stringify({ nombre, genero, nivel_emocional, imagen_base64: imagenBase64 })
                 });
 
-                if (!response.ok) throw new Error();
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.detail || "Error al crear");
+                }
 
-                alert("✅ K-Drama creado exitosamente!");
+                mostrarExito("K-Drama creado exitosamente!");
                 document.getElementById("formKDrama").reset();
                 cargarKDramas();
 
             } catch (error) {
-                alert("❌ Error al crear K-Drama");
+                mostrarError(error.message);
             }
         });
 
@@ -379,10 +400,16 @@
             e.preventDefault();
 
             const id = document.getElementById("edit_id").value;
+            const nombre = document.getElementById("edit_nombre").value.trim();
+            const nivel_emocional = parseInt(document.getElementById("edit_nivel").value);
+
+            if (nombre.length < 2) { mostrarError("El nombre debe tener al menos 2 caracteres."); return; }
+            if (isNaN(nivel_emocional) || nivel_emocional < 1 || nivel_emocional > 10) { mostrarError("El nivel emocional debe ser entre 1 y 10."); return; }
+
             const datos = {
-                nombre: document.getElementById("edit_nombre").value,
+                nombre,
                 genero: document.getElementById("edit_genero").value,
-                nivel_emocional: parseInt(document.getElementById("edit_nivel").value),
+                nivel_emocional,
                 imagen_base64: null
             };
 
@@ -398,18 +425,18 @@
 
                 if (!response.ok) throw new Error();
 
-                alert("✅ K-Drama actualizado!");
+                mostrarExito("K-Drama actualizado!");
                 cerrarModal("modalEditarKDrama");
                 cargarKDramas();
 
             } catch (error) {
-                alert("❌ Error al actualizar");
+                mostrarError("Error al actualizar");
             }
         });
 
         // ELIMINAR K-Drama
         async function eliminarKDrama(id) {
-            if (!confirm("¿Eliminar este K-Drama permanentemente?")) return;
+            if (!confirm("¿Estás seguro de eliminar este K-Drama? Esta acción no se puede deshacer.")) return;
 
             try {
                 const response = await fetch(API + `/kdramas/${id}`, {
@@ -419,11 +446,11 @@
 
                 if (!response.ok) throw new Error();
 
-                alert("✅ K-Drama eliminado!");
+                mostrarExito("K-Drama eliminado!");
                 cargarKDramas();
 
             } catch (error) {
-                alert("❌ Error al eliminar");
+                mostrarError("Error al eliminar");
             }
         }
 
