@@ -70,6 +70,16 @@
             color: #8b8baa;
             margin-bottom: 1rem;
         }
+        .kdrama-desc {
+            font-size: 0.82rem;
+            color: #6b6b8a;
+            margin: 0.3rem 0 0.5rem;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
         .search-clear {
             background: none;
             border: none;
@@ -169,13 +179,14 @@
             grid.innerHTML = lista.map(kd => `
                 <div class="kdrama-card">
                     <div class="kdrama-image">
-                        ${kd.imagen_base64
-                            ? `<img src="${kd.imagen_base64}" alt="${kd.nombre}">`
+                        ${kd.imagen_url
+                            ? `<img src="${kd.imagen_url}" alt="${kd.nombre}">`
                             : `<div class="no-image">${getIconoPorGenero(kd.genero)}</div>`}
                     </div>
                     <div class="kdrama-info">
                         <div class="kdrama-title">${kd.nombre}</div>
                         <div class="kdrama-genre">${kd.genero}</div>
+                        ${kd.descripcion ? `<div class="kdrama-desc">${kd.descripcion}</div>` : ''}
                         <div class="kdrama-emotional">💖 Nivel emocional: ${kd.nivel_emocional}/10</div>
                         <div class="emotional-bar">
                             <div class="emotional-fill" style="width:${(kd.nivel_emocional/10)*100}%"></div>

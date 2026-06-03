@@ -148,9 +148,13 @@
                             <input type="number" id="kdrama_nivel" min="1" max="10" required>
                         </div>
                         <div class="form-group">
-                            <label>Imagen (opcional)</label>
-                            <input type="file" id="kdrama_imagen" accept="image/*">
+                            <label>URL de imagen (opcional)</label>
+                            <input type="url" id="kdrama_imagen" placeholder="https://...">
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción (opcional)</label>
+                        <textarea id="kdrama_descripcion" rows="2" placeholder="Breve sinopsis del K-Drama..." style="width:100%;padding:0.5rem;border-radius:8px;border:1px solid #e8daff;font-family:inherit;resize:vertical;"></textarea>
                     </div>
                     <button type="submit" class="btn">➕ Agregar K-Drama</button>
                 </form>
@@ -238,6 +242,14 @@
                     <label>Nivel emocional (1-10)</label>
                     <input type="number" id="edit_nivel" min="1" max="10" required>
                 </div>
+                <div class="form-group">
+                    <label>Descripción (opcional)</label>
+                    <textarea id="edit_descripcion" rows="2" placeholder="Breve sinopsis..." style="width:100%;padding:0.5rem;border-radius:8px;border:1px solid #e8daff;font-family:inherit;resize:vertical;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>URL de imagen (opcional)</label>
+                    <input type="url" id="edit_imagen_url" placeholder="https://...">
+                </div>
                 <button type="submit" class="btn">💾 Guardar Cambios</button>
             </form>
         </div>
@@ -287,16 +299,6 @@
             setTimeout(() => div.remove(), 3000);
         }
 
-        // Convertir imagen a Base64
-        function convertirABase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
-        }
-
         // CREAR K-Drama
         document.getElementById("formKDrama").addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -305,17 +307,12 @@
             const genero = document.getElementById("kdrama_genero").value;
             const nivelRaw = document.getElementById("kdrama_nivel").value;
             const nivel_emocional = parseInt(nivelRaw);
-            const imagenFile = document.getElementById("kdrama_imagen").files[0];
+            const imagen_url = document.getElementById("kdrama_imagen").value.trim() || null;
+            const descripcion = document.getElementById("kdrama_descripcion").value.trim() || null;
 
             // Validaciones
             if (nombre.length < 2) { mostrarError("El nombre debe tener al menos 2 caracteres."); return; }
             if (isNaN(nivel_emocional) || nivel_emocional < 1 || nivel_emocional > 10) { mostrarError("El nivel emocional debe ser entre 1 y 10."); return; }
-            if (imagenFile && imagenFile.size > 2 * 1024 * 1024) { mostrarError("La imagen no debe superar 2MB."); return; }
-
-            let imagenBase64 = null;
-            if (imagenFile) {
-                imagenBase64 = await convertirABase64(imagenFile);
-            }
 
             try {
                 const response = await fetch(API + "/kdramas", {
@@ -324,7 +321,7 @@
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${token}`
                     },
-                    body: JSON.stringify({ nombre, genero, nivel_emocional, imagen_base64: imagenBase64 })
+                    body: JSON.stringify({ nombre, genero, nivel_emocional, descripcion, imagen_url })
                 });
 
                 if (!response.ok) {
@@ -357,13 +354,14 @@
                 container.innerHTML = kdramas.map(kd => `
                     <div class="kdrama-item">
                         <div class="kdrama-item-image">
-                            ${kd.imagen_base64 ?
-                                `<img src="${kd.imagen_base64}" alt="${kd.nombre}">` :
+                            ${kd.imagen_url ?
+                                `<img src="${kd.imagen_url}" alt="${kd.nombre}">` :
                                 `<span>🎬</span>`}
                         </div>
                         <div class="kdrama-item-info">
                             <h4>${kd.nombre}</h4>
                             <small>${kd.genero} | 💖 ${kd.nivel_emocional}/10</small>
+                            ${kd.descripcion ? `<p style="font-size:0.78rem;color:#6b6b8a;margin:0.2rem 0 0;">${kd.descripcion}</p>` : ''}
                         </div>
                         <div class="kdrama-item-actions">
                             <button class="btn btn-small btn-warning" onclick="abrirEditarKDrama(${kd.id})">✏️</button>
@@ -388,6 +386,8 @@
                 document.getElementById("edit_nombre").value = kd.nombre;
                 document.getElementById("edit_genero").value = kd.genero;
                 document.getElementById("edit_nivel").value = kd.nivel_emocional;
+                document.getElementById("edit_descripcion").value = kd.descripcion || "";
+                document.getElementById("edit_imagen_url").value = kd.imagen_url || "";
 
                 document.getElementById("modalEditarKDrama").style.display = "block";
             } catch (error) {
@@ -410,7 +410,8 @@
                 nombre,
                 genero: document.getElementById("edit_genero").value,
                 nivel_emocional,
-                imagen_base64: null
+                descripcion: document.getElementById("edit_descripcion").value.trim() || null,
+                imagen_url: document.getElementById("edit_imagen_url").value.trim() || null
             };
 
             try {

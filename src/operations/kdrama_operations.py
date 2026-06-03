@@ -25,7 +25,8 @@ def update_kdrama(id, nuevo: dict):
         drama.nombre = nuevo["nombre"]
         drama.genero = nuevo["genero"]
         drama.nivel_emocional = nuevo["nivel_emocional"]
-        drama.imagen_base64 = nuevo.get("imagen_base64", drama.imagen_base64)
+        drama.descripcion = nuevo.get("descripcion", drama.descripcion)
+        drama.imagen_url = nuevo.get("imagen_url", drama.imagen_url)
         session.add(drama)
         session.commit()
         session.refresh(drama)

@@ -25,4 +25,5 @@ class KDrama(SQLModel, table=True):
     nombre: str
     genero: Genero
     nivel_emocional: int
-    imagen_base64: Optional[str] = Field(default=None)  # 👈 NUEVO
+    descripcion: Optional[str] = Field(default=None)
+    imagen_url: Optional[str] = Field(default=None)
