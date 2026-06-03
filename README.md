@@ -317,6 +317,6 @@ El archivo `test/test_main.http` contiene ejemplos de peticiones HTTP para proba
 
 ---
 
-## Autores
+## Autor:Maria Fernanda Hincapie Granados
 
 Proyecto desarrollado como parte del curso de **Desarrollo de Software**.
